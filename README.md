@@ -1,2 +1,3 @@
 # multichat
-Multi languages chatting app
+
+This repository is currently empty.
