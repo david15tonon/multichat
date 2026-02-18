@@ -11,7 +11,6 @@ export interface BadgeProps {
 const StyledBadge = styled.span<{
   $variant: BadgeProps['variant'];
   $size: BadgeProps['size'];
-  theme: Theme;
 }>`
   display: inline-flex;
   align-items: center;

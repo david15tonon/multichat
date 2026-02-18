@@ -20,7 +20,6 @@ const StyledButton = styled.button<{
   $size: ButtonProps['size'];
   $fullWidth: boolean;
   $loading: boolean;
-  theme: Theme;
 }>`
   display: inline-flex;
   align-items: center;

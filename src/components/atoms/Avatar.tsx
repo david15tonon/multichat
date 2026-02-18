@@ -14,7 +14,6 @@ export interface AvatarProps {
 const AvatarContainer = styled.div<{
   $size: AvatarProps['size'];
   $clickable: boolean;
-  theme: Theme;
 }>`
   position: relative;
   display: inline-flex;
