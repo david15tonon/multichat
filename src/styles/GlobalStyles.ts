@@ -1,7 +1,7 @@
 import { createGlobalStyle } from 'styled-components';
-import { Theme } from './theme';
+// import { Theme } from './theme';  ← Vous pouvez supprimer cette ligne si non utilisée
 
-export const GlobalStyles = createGlobalStyle
+export const GlobalStyles = createGlobalStyle`  // ← Pas de retour à la ligne !
   * {
     margin: 0;
     padding: 0;
