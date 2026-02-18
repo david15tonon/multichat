@@ -47,7 +47,7 @@ const Container = styled.div`
 const ToneOption = styled.button<{
   $selected: boolean;
   $variant: ToneSelectorProps['variant'];
-  theme: Theme;
+  
 }>`
   display: flex;
   align-items: center;
@@ -75,7 +75,7 @@ const ToneOption = styled.button<{
   `}
 `;
 
-const IconWrapper = styled.div<{ $selected: boolean; theme: Theme }>`
+const IconWrapper = styled.div<{ $selected: boolean;  }>`
   width: 48px;
   height: 48px;
   display: flex;
@@ -107,7 +107,7 @@ const Description = styled.span`
   color: ${({ theme }) => theme.colors.neutral.gray};
 `;
 
-const RadioIndicator = styled.div<{ $selected: boolean; theme: Theme }>`
+const RadioIndicator = styled.div<{ $selected: boolean;  }>`
   width: 24px;
   height: 24px;
   border-radius: 50%;
@@ -139,7 +139,7 @@ const CompactContainer = styled.div`
   border: 2px solid ${({ theme }) => theme.colors.neutral.black};
 `;
 
-const CompactButton = styled.button<{ $selected: boolean; theme: Theme }>`
+const CompactButton = styled.button<{ $selected: boolean;  }>`
   padding: ${({ theme }) => `${theme.spacing.xs} ${theme.spacing.md}`};
   border-radius: ${({ theme }) => theme.borderRadius.full};
   border: none;

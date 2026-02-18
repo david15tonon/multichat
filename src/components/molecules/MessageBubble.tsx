@@ -30,7 +30,7 @@ const BubbleContent = styled.div<{ $isOwn: boolean }>`
   flex: 1;
 `;
 
-const BubbleWrapper = styled.div<{ $isOwn: boolean; theme: Theme }>`
+const BubbleWrapper = styled.div<{ $isOwn: boolean;  }>`
   background-color: ${({ theme, $isOwn }) =>
     $isOwn ? theme.colors.primary.yellow : theme.colors.neutral.white};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
@@ -82,7 +82,7 @@ const Timestamp = styled.span`
   margin: 0 ${({ theme }) => theme.spacing.xs};
 `;
 
-const StatusIndicator = styled.div<{ $status: Message['status']; theme: Theme }>`
+const StatusIndicator = styled.div<{ $status: Message['status'];  }>`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.xs};
