@@ -75,7 +75,7 @@ const AvatarImage = styled.img`
   object-fit: cover;
 `;
 
-const OnlineIndicator = styled.div<{ $size: AvatarProps['size']; theme: Theme }>`
+const OnlineIndicator = styled.div<{ $size: AvatarProps['size'];  }>`
   position: absolute;
   bottom: 0;
   right: 0;

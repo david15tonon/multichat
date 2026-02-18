@@ -23,7 +23,7 @@ const Label = styled.label`
   color: ${({ theme }) => theme.colors.neutral.black};
 `;
 
-const InputContainer = styled.div<{ $hasIcon: boolean; $error: boolean; theme: Theme }>`
+const InputContainer = styled.div<{ $hasIcon: boolean; $error: boolean;  }>`
   position: relative;
   display: flex;
   align-items: center;
