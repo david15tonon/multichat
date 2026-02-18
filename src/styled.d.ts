@@ -23,8 +23,10 @@ declare module 'styled-components' {
         warning: string;
       };
       background: {
-        primary: string;
-        secondary: string;
+        yellow: string;    // ← CORRIGÉ
+        orange: string;    // ← CORRIGÉ
+        cream: string;     // ← CORRIGÉ
+        white: string;     // ← CORRIGÉ
       };
     };
     spacing: {
@@ -33,33 +35,43 @@ declare module 'styled-components' {
       md: string;
       lg: string;
       xl: string;
-      xxl: string;
+      '2xl': string;       // ← CORRIGÉ (notez les quotes pour le chiffre)
     };
     typography: {
       fontFamily: {
         primary: string;
-        secondary: string;
+        // secondary: string;  ← Supprimez car pas dans theme.ts
       };
       fontSize: {
         xs: string;
         sm: string;
-        md: string;
+        base: string;      // ← AJOUTÉ
         lg: string;
         xl: string;
-        xxl: string;
+        '2xl': string;     // ← AJOUTÉ
+        '3xl': string;     // ← AJOUTÉ
+        '4xl': string;     // ← AJOUTÉ
       };
       fontWeight: {
-        regular: number;
+        normal: number;    // ← CORRIGÉ (au lieu de regular)
         medium: number;
         semibold: number;
         bold: number;
+        black: number;     // ← AJOUTÉ
       };
     };
     borderRadius: {
       sm: string;
       md: string;
       lg: string;
+      xl: string;          // ← AJOUTÉ
       full: string;
+    };
+    shadows: {             // ← AJOUTÉ (manquant)
+      sm: string;
+      md: string;
+      lg: string;
+      card: string;
     };
     transitions: {
       fast: string;
@@ -67,9 +79,10 @@ declare module 'styled-components' {
       slow: string;
     };
     zIndex: {
+      dropdown: number;    // ← RÉORGANISÉ pour correspondre
       modal: number;
-      dropdown: number;
-      header: number;
+      toast: number;       // ← AJOUTÉ
+      tooltip: number;     // ← AJOUTÉ
     };
   }
 }
