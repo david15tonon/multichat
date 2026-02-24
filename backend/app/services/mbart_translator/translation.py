@@ -1,147 +1,149 @@
-from typing import Optional
-from deep_translator import GoogleTranslator
-from app.models.user import LanguageEnum, MessageToneEnum
-from app.schemas.message import TranslationRequest, TranslationResponse
-from app.core.config import settings
+import asyncio
+import torch
+from transformers import MBartForConditionalGeneration, MBart50TokenizerFast
+from typing import Optional, Dict, List, Union
+from .config import Language, Tone, MBART_LANG_CODES, TONE_PARAMS, DEFAULT_MODEL_NAME
 
+class MBartTranslator:
+    """
+    Traducteur indépendant basé sur mBART-50.
+    Utilisation :
+        translator = MBartTranslator()
+        result = translator.translate("Hello", source_lang="en", target_lang="fr", tone="casual")
+    """
 
-class TranslationService:
-    """Translation service using Google Translate or DeepL"""
-    
-    # Tone adjustments (can be expanded with more sophisticated NLP)
-    TONE_PREFIXES = {
-        MessageToneEnum.CASUAL: "",
-        MessageToneEnum.STANDARD: "",
-        MessageToneEnum.FORMAL: ""
-    }
-    
-    TONE_SUFFIXES = {
-        MessageToneEnum.CASUAL: "",
-        MessageToneEnum.STANDARD: "",
-        MessageToneEnum.FORMAL: ""
-    }
-    
-    @staticmethod
-    def _get_language_code(language: LanguageEnum) -> str:
-        """Convert LanguageEnum to translator language code"""
-        mapping = {
-            LanguageEnum.FR: "fr",
-            LanguageEnum.EN: "en",
-            LanguageEnum.ES: "es",
-            LanguageEnum.DE: "de",
-            LanguageEnum.IT: "it",
-            LanguageEnum.PT: "pt",
-            LanguageEnum.ZH: "zh-CN",
-            LanguageEnum.JA: "ja",
-            LanguageEnum.AR: "ar",
-        }
-        return mapping.get(language, "en")
-    
-    @staticmethod
-    async def translate_text(
+    def __init__(self, model_name: str = DEFAULT_MODEL_NAME, device: Optional[str] = None):
+        """
+        Initialise le modèle et le tokenizer.
+        - model_name : nom du modèle Hugging Face
+        - device : "cuda" ou "cpu" (auto-détection si None)
+        """
+        if device is None:
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        else:
+            self.device = device
+
+        print(f"Chargement de mBART sur {self.device}...")
+        self.tokenizer = MBart50TokenizerFast.from_pretrained(model_name)
+        self.model = MBartForConditionalGeneration.from_pretrained(
+            model_name,
+            torch_dtype=torch.float16 if self.device == "cuda" else torch.float32,
+            low_cpu_mem_usage=True
+        ).to(self.device)
+        self.model.eval()
+        print("Modèle mBART chargé avec succès.")
+
+    def _map_language(self, lang: Union[str, Language]) -> str:
+        """Convertit un code de langue (ex: 'fr') en code mBART (ex: 'fr_XX')."""
+        if isinstance(lang, str):
+            # Essayer de convertir en Enum
+            try:
+                lang = Language(lang)
+            except ValueError:
+                raise ValueError(f"Langue non supportée : {lang}")
+        if lang not in MBART_LANG_CODES:
+            raise ValueError(f"Langue {lang} non supportée par mBART")
+        return MBART_LANG_CODES[lang]
+
+    def translate_sync(
+        self,
         text: str,
-        source_language: LanguageEnum,
-        target_language: LanguageEnum,
-        tone: MessageToneEnum = MessageToneEnum.STANDARD
-    ) -> TranslationResponse:
+        source_lang: Union[str, Language],
+        target_lang: Union[str, Language],
+        tone: Union[str, Tone] = Tone.STANDARD,
+        max_length: int = 200
+    ) -> Dict:
         """
-        Translate text from source language to target language.
-        
-        Args:
-            text: Text to translate
-            source_language: Source language
-            target_language: Target language
-            tone: Message tone (casual, standard, formal)
-        
-        Returns:
-            TranslationResponse with translated text
+        Version synchrone de la traduction.
         """
-        try:
-            # If languages are the same, no translation needed
-            if source_language == target_language:
-                return TranslationResponse(
-                    translated_text=text,
-                    source_language=source_language,
-                    target_language=target_language,
-                    confidence=1.0
-                )
-            
-            # Get language codes
-            source_code = TranslationService._get_language_code(source_language)
-            target_code = TranslationService._get_language_code(target_language)
-            
-            # Apply tone prefix (for future NLP enhancement)
-            adjusted_text = text
-            
-            # Translate using Google Translator
-            translator = GoogleTranslator(source=source_code, target=target_code)
-            translated = translator.translate(adjusted_text)
-            
-            # Apply tone suffix (for future NLP enhancement)
-            # This is where we could add tone adjustment post-processing
-            
-            return TranslationResponse(
-                translated_text=translated,
-                source_language=source_language,
-                target_language=target_language,
-                confidence=0.95  # Google Translate doesn't provide confidence scores
-            )
-            
-        except Exception as e:
-            # Log error and return original text
-            print(f"Translation error: {str(e)}")
-            return TranslationResponse(
-                translated_text=text,  # Fallback to original
-                source_language=source_language,
-                target_language=target_language,
-                confidence=0.0
-            )
-    
-    @staticmethod
-    async def translate_request(
-        translation_request: TranslationRequest
-    ) -> TranslationResponse:
-        """Translate from TranslationRequest schema"""
-        return await TranslationService.translate_text(
-            text=translation_request.text,
-            source_language=translation_request.source_language,
-            target_language=translation_request.target_language,
-            tone=translation_request.tone
-        )
-    
-    @staticmethod
-    def detect_language(text: str) -> Optional[LanguageEnum]:
-        """
-        Detect language of text.
-        
-        Args:
-            text: Text to analyze
-        
-        Returns:
-            Detected LanguageEnum or None if detection fails
-        """
-        try:
-            from langdetect import detect
-            detected = detect(text)
-            
-            # Map detected language to LanguageEnum
-            mapping = {
-                "fr": LanguageEnum.FR,
-                "en": LanguageEnum.EN,
-                "es": LanguageEnum.ES,
-                "de": LanguageEnum.DE,
-                "it": LanguageEnum.IT,
-                "pt": LanguageEnum.PT,
-                "zh-cn": LanguageEnum.ZH,
-                "zh-tw": LanguageEnum.ZH,
-                "ja": LanguageEnum.JA,
-                "ar": LanguageEnum.AR,
+        # Gestion des types
+        if isinstance(source_lang, str):
+            source_lang = Language(source_lang)
+        if isinstance(target_lang, str):
+            target_lang = Language(target_lang)
+        if isinstance(tone, str):
+            tone = Tone(tone)
+
+        if source_lang == target_lang:
+            return {
+                "success": True,
+                "translated_text": text,
+                "source_lang": source_lang.value,
+                "target_lang": target_lang.value,
+                "confidence": 1.0
             }
-            
-            return mapping.get(detected, LanguageEnum.EN)
-            
-        except Exception:
-            return None
 
+        try:
+            src_code = self._map_language(source_lang)
+            tgt_code = self._map_language(target_lang)
 
-translation_service = TranslationService()
+            self.tokenizer.src_lang = src_code
+            inputs = self.tokenizer(
+                text,
+                return_tensors="pt",
+                truncation=True,
+                max_length=512
+            ).to(self.device)
+
+            # Paramètres de génération
+            gen_params = TONE_PARAMS.get(tone, TONE_PARAMS[Tone.STANDARD]).copy()
+            gen_params.update({
+                "max_length": max_length,
+                "forced_bos_token_id": self.tokenizer.lang_code_to_id[tgt_code],
+                "early_stopping": True,
+                "no_repeat_ngram_size": 3,
+            })
+
+            with torch.no_grad():
+                generated_tokens = self.model.generate(
+                    **inputs,
+                    **gen_params
+                )
+
+            translation = self.tokenizer.batch_decode(
+                generated_tokens,
+                skip_special_tokens=True
+            )[0]
+
+            return {
+                "success": True,
+                "translated_text": translation,
+                "source_lang": source_lang.value,
+                "target_lang": target_lang.value,
+                "confidence": 0.95  # Valeur indicative
+            }
+
+        except Exception as e:
+            return {
+                "success": False,
+                "translated_text": text,
+                "source_lang": source_lang.value,
+                "target_lang": target_lang.value,
+                "error": str(e)
+            }
+
+    async def translate(
+        self,
+        text: str,
+        source_lang: Union[str, Language],
+        target_lang: Union[str, Language],
+        tone: Union[str, Tone] = Tone.STANDARD,
+        max_length: int = 200
+    ) -> Dict:
+        """
+        Version asynchrone de la traduction.
+        """
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            self.translate_sync,
+            text,
+            source_lang,
+            target_lang,
+            tone,
+            max_length
+        )
+
+    def get_supported_languages(self) -> List[str]:
+        """Retourne la liste des codes de langue supportés."""
+        return [lang.value for lang in Language]
