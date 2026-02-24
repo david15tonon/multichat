@@ -12,7 +12,7 @@ from app.schemas.message import (
     ConversationWithMessages
 )
 from app.services.message import message_service
-from app.services.translation import translation_service
+from app.services.mbart_translator import translation as translation_service
 from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.models.message import TranslationStatusEnum

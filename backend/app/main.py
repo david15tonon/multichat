@@ -97,7 +97,7 @@ async def root():
 
 
 
-from mbart_translator import MBartTranslator, Language, Tone
+from app.services.mbart_translator import MBartTranslator, Language, Tone
 
 # Créer une instance globale (à faire au démarrage)
 translator = MBartTranslator()  # ou avec un modèle spécifique
