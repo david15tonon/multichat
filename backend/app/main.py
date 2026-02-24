@@ -95,6 +95,19 @@ async def root():
     }
 
 
+
+
+from mbart_translator import MBartTranslator, Language, Tone
+
+# Créer une instance globale (à faire au démarrage)
+translator = MBartTranslator()  # ou avec un modèle spécifique
+
+# Dans une route FastAPI
+@app.post("/translate")
+async def translate_endpoint(text: str, source: str, target: str, tone: str = "standard"):
+    result = await translator.translate(text, source, target, tone)
+    return {text:text, result:result}
+
 # Health check endpoint
 @app.get("/health", tags=["Health"])
 async def health_check():
