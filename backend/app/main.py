@@ -141,6 +141,13 @@ async def translation_status():
             "status": "loading",
             "message": "Le modèle est en cours de chargement (première requête)"
         }
+
+# ⬇️ AJOUT 1: Endpoint /kaithheathcheck OBLIGATOIRE pour Leapcell (ligne à ajouter)
+@app.get("/kaithheathcheck")
+async def kaith_heathcheck():
+    """Healthcheck requis par Leapcell - doit répondre immédiatement"""
+    return {"status": "healthy"}
+
 # Health check endpoint
 @app.get("/health", tags=["Health"])
 async def health_check():
@@ -184,7 +191,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=8080,  # ⬇️ AJOUT 2: Port 8080 pour Leapcell (modifier cette ligne)
         reload=settings.DEBUG,
         log_level=settings.LOG_LEVEL.lower()
     )
