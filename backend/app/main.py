@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException  # ⬅️ AJOUT: HTTPException pour translate_endpoint
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from contextlib import asynccontextmanager
@@ -94,12 +94,9 @@ async def root():
         "health": "/health"
     }
 
+# ⬇️ SUPPRESSION: On ne importe plus au niveau module
+# from app.services.mbart_translator import MBartTranslator
 
-
-
-from app.services.mbart_translator import MBartTranslator
-
-# Créer une instance globale (à faire au démarrage)
 # Variable globale pour le traducteur
 translator_instance = None
 
@@ -115,6 +112,9 @@ async def translate_endpoint(
     Le modèle est chargé automatiquement lors de la première requête.
     """
     global translator_instance
+    
+    # ⬇️ AJOUT: Import différé ici pour éviter le blocage au démarrage
+    from app.services.mbart_translator import MBartTranslator
     
     # Obtenir l'instance du traducteur (lance le chargement si nécessaire)
     translator_instance = await MBartTranslator.get_instance()
@@ -142,7 +142,7 @@ async def translation_status():
             "message": "Le modèle est en cours de chargement (première requête)"
         }
 
-# ⬇️ AJOUT 1: Endpoint /kaithheathcheck OBLIGATOIRE pour Leapcell (ligne à ajouter)
+# ⬇️ AJOUT: Endpoint /kaithheathcheck OBLIGATOIRE pour Leapcell
 @app.get("/kaithheathcheck")
 async def kaith_heathcheck():
     """Healthcheck requis par Leapcell - doit répondre immédiatement"""
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8080,  # ⬇️ AJOUT 2: Port 8080 pour Leapcell (modifier cette ligne)
+        port=8080,  # Port 8080 pour Leapcell
         reload=settings.DEBUG,
         log_level=settings.LOG_LEVEL.lower()
     )
