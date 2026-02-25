@@ -38,6 +38,7 @@ pydantic-settings==2.13.0
 pydantic_core==2.41.5
 Pygments==2.19.2
 python-dotenv==1.2.1
+python-jose[cryptography]
 python-multipart==0.0.22
 PyYAML==6.0.3
 regex==2026.1.15
