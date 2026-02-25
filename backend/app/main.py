@@ -97,17 +97,50 @@ async def root():
 
 
 
-from app.services.mbart_translator import MBartTranslator, Language, Tone
+from app.services.mbart_translator import MBartTranslator
 
 # Créer une instance globale (à faire au démarrage)
-translator = MBartTranslator()  # ou avec un modèle spécifique
+# Variable globale pour le traducteur
+translator_instance = None
 
-# Dans une route FastAPI
 @app.post("/translate")
-async def translate_endpoint(text: str, source: str, target: str, tone: str = "standard"):
-    result = await translator.translate(text, source, target, tone)
-    return {text:text, result:result}
+async def translate_endpoint(
+    text: str, 
+    source: str, 
+    target: str, 
+    tone: str = "standard"
+):
+    """
+    Translate text from source language to target language with tone adaptation.
+    Le modèle est chargé automatiquement lors de la première requête.
+    """
+    global translator_instance
+    
+    # Obtenir l'instance du traducteur (lance le chargement si nécessaire)
+    translator_instance = await MBartTranslator.get_instance()
+    
+    # La traduction attendra automatiquement que le modèle soit chargé
+    result = await translator_instance.translate(text, source, target, tone)
+    return result
 
+@app.get("/translate/status")
+async def translation_status():
+    """Vérifie l'état du modèle de traduction"""
+    global translator_instance
+    
+    if translator_instance is None:
+        return {"status": "not_initialized"}
+    
+    if translator_instance._loaded:
+        return {
+            "status": "loaded",
+            "device": translator_instance.device
+        }
+    else:
+        return {
+            "status": "loading",
+            "message": "Le modèle est en cours de chargement (première requête)"
+        }
 # Health check endpoint
 @app.get("/health", tags=["Health"])
 async def health_check():
