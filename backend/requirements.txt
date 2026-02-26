@@ -1,107 +1,133 @@
-
-accelerate==1.12.0
-annotated-doc==0.0.4
-annotated-types==0.7.0
-anyio==4.12.1
-asyncpg
-certifi==2026.1.4
-click==8.3.1
-colorama==0.4.6
-dnspython==2.8.0
-email-validator==2.3.0
-fastapi==0.129.0
-fastapi-cli==0.0.23
-fastapi-cloud-cli==0.13.0
-fastar==0.8.0
-filelock==3.24.2
-fsspec==2026.2.0
-h11==0.16.0
-hf-xet==1.2.0
-httpcore==1.0.9
-httptools==0.7.1
-httpx==0.28.1
-huggingface_hub==1.4.1
-idna==3.11
-itsdangerous==2.2.0
-Jinja2==3.1.6
-joblib==1.5.3
-markdown-it-py==4.0.0
-MarkupSafe==3.0.3
-mdurl==0.1.2
-mpmath==1.3.0
-networkx==3.6.1
-numpy==2.4.2
-orjson==3.11.7
-packaging==26.0
-passlib[bcrypt]
-psutil==7.2.2
-pydantic==2.12.5
-pydantic-extra-types==2.11.0
-pydantic-settings==2.13.0
-pydantic_core==2.41.5
-Pygments==2.19.2
-python-dotenv==1.2.1
-python-jose[cryptography]
-python-multipart==0.0.22
-PyYAML==6.0.3
-regex==2026.1.15
-rich==14.3.2
-rich-toolkit==0.19.4
-rignore==0.7.6
-sacremoses==0.1.1
-safetensors==0.7.0
-sentencepiece==0.2.1
-sentry-sdk==2.53.0
-setuptools==82.0.0
-shellingham==1.5.4
-starlette==0.52.1
-sympy==1.14.0
-tiktoken==0.12.0
-tokenizers==0.22.2
-torch==2.10.0
-tqdm==4.67.3
-transformers==5.2.0
-typer==0.24.0
-typer-slim==0.24.0
-typing-inspection==0.4.2
-typing_extensions==4.15.0
-ujson==5.11.0
-urllib3==2.6.3
-uvicorn==0.41.0
-watchfiles==1.1.1
-websockets==16.0
-
-
-# API Framework
+# ============================================
+# API Framework & Serveur
+# ============================================
 fastapi==0.129.0
 uvicorn[standard]==0.41.0
 python-multipart==0.0.22
+websockets==16.0
+starlette==0.52.1
 
+# ============================================
 # Authentification et sécurité
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
+# ============================================
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+python-dotenv==1.2.1
 
-# Base de données
-sqlalchemy>=2.0.0
-alembic>=1.12.0
-psycopg2-binary>=2.9.0  # pour PostgreSQL
+# ============================================
+# Base de données (Async - plus léger)
+# ============================================
+sqlalchemy==2.0.0
+asyncpg==0.29.0
+alembic==1.12.0
 
+# ============================================
 # Validation des données
+# ============================================
 pydantic==2.12.5
 pydantic-settings==2.13.0
-email-validator>=2.3.0
+pydantic-extra-types==2.11.0
+pydantic-core==2.41.5
+email-validator==2.3.0
 
-# Utilitaires
-python-dotenv>=1.0.0
-httpx>=0.28.0
-websockets>=16.0
+# ============================================
+# IA / ML - VERSION ALLÉGÉE CPU
+# ============================================
 
-# Dépendances système
-click>=8.0.0
-typing-extensions>=4.15.0
+# PyTorch CPU uniquement (pas de CUDA, ~200MB au lieu de 600MB)
+--index-url https://download.pytorch.org/whl/cpu
+torch==2.2.0+cpu
 
+# Transformers stable (version plus légère que 5.2.0)
+transformers==4.38.2
 
-# Autres:
+# Dépendances minimales pour transformers
+tokenizers==0.15.2
+sentencepiece==0.1.99
+huggingface-hub==0.21.3
+safetensors==0.4.2
 
-celery
-redis
+# NumPy compatible (version stable avec torch CPU)
+numpy==1.26.4
+
+# ============================================
+# HTTP & Utilitaires
+# ============================================
+httpx==0.28.1
+httpcore==1.0.9
+h11==0.16.0
+certifi==2026.1.4
+urllib3==2.6.3
+anyio==4.12.1
+idna==3.11
+sniffio==1.3.1
+
+# ============================================
+# Utilitaires système
+# ============================================
+click==8.3.1
+typer==0.12.0
+typing-extensions==4.15.0
+annotated-types==0.7.0
+packaging==23.2
+PyYAML==6.0.1
+regex==2023.12.25
+tqdm==4.66.2
+filelock==3.13.1
+fsspec==2024.2.0
+joblib==1.3.2
+
+# ============================================
+# Parsing & Texte
+# ============================================
+markdown-it-py==3.0.0
+mdurl==0.1.2
+Pygments==2.17.2
+
+# ============================================
+# JSON & Serialization
+# ============================================
+orjson==3.9.15
+ujson==5.9.0
+
+# ============================================
+# SUPPRIMÉS (trop lourds ou inutiles pour Serverless):
+# ============================================
+# accelerate==1.12.0          ← Inutile pour inférence simple
+# sentry-sdk==2.53.0          ← Optionnel, lourd
+# tiktoken==0.12.0            ← Si pas utilisé pour OpenAI
+# psutil==7.2.2               ← Optionnel
+# sympy==1.14.0               ← Inutile pour inference
+# mpmath==1.3.0               ← Dépendance sympy
+# networkx==3.6.1             ← Inutile
+# Jinja2==3.1.6               ← Inutile sans templates
+# MarkupSafe==3.0.3           ← Dépendance Jinja2
+# itsdangerous==2.2.0         ← Inutile
+# colorama==0.4.6             ← Windows only
+# dnspython==2.8.0            ← Déjà inclus via email-validator
+# fastapi-cli==0.0.23         ← Inutile en production
+# fastapi-cloud-cli==0.13.0   ← Inutile
+# fastar==0.8.0               ← Inutile
+# hf-xet==1.2.0               ← Expérimental, lourd
+# httptools==0.7.1            ← Déjà dans uvicorn[standard]
+# watchfiles==1.1.1           ← Dev only
+# rich==14.3.2                ← Inutile en production
+# rich-toolkit==0.19.4        ← Inutile
+# rignore==0.7.6              ← Inutile
+# sacremoses==0.1.1           ← Vieux, remplacé par sentencepiece
+# setuptools==82.0.0          ← Déjà présent
+# shellingham==1.5.4          ← Inutile
+# typer-slim==0.24.0          ← Doublon avec typer
+# typing-inspection==0.4.2    ← Expérimental
+# annotated-doc==0.0.4        ← Inutile
+# celery                      ← Trop lourd pour Serverless
+# redis                       ← Trop lourd pour Serverless
+# psycopg2-binary             ← Remplacé par asyncpg (plus léger)
+
+# ============================================
+# Variables d'environnement recommandées pour Leapcell:
+# HF_HUB_DISABLE_TELEMETRY=1
+# HF_HUB_OFFLINE=1
+# TRANSFORMERS_OFFLINE=1
+# TRANSFORMERS_VERBOSITY=error
+# ============================================
