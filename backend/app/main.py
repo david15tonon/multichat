@@ -99,7 +99,6 @@ async def root():
 
 # Variable globale pour le traducteur
 translator_instance = None
-
 @app.post("/translate")
 async def translate_endpoint(
     text: str, 
@@ -108,41 +107,20 @@ async def translate_endpoint(
     tone: str = "standard"
 ):
     """
-    Translate text from source language to target language with tone adaptation.
-    Le modèle est chargé automatiquement lors de la première requête.
+    Traduction via l'API Hugging Face (instantané, sans chargement)
     """
-    global translator_instance
-    
-    # ⬇️ AJOUT: Import différé ici pour éviter le blocage au démarrage
-    from app.services.mbart_translator import MBartTranslator
-    
-    # Obtenir l'instance du traducteur (lance le chargement si nécessaire)
-    translator_instance = await MBartTranslator.get_instance()
-    
-    # La traduction attendra automatiquement que le modèle soit chargé
-    result = await translator_instance.translate(text, source, target, tone)
+    translator = await MBartTranslator.get_instance()
+    result = await translator.translate(text, source, target, tone)
     return result
 
 @app.get("/translate/status")
 async def translation_status():
-    """Vérifie l'état du modèle de traduction"""
-    global translator_instance
-    
-    if translator_instance is None:
-        return {"status": "not_initialized"}
-    
-    if translator_instance._loaded:
-        return {
-            "status": "loaded",
-            "device": translator_instance.device
-        }
-    else:
-        return {
-            "status": "loading",
-            "message": "Le modèle est en cours de chargement (première requête)"
-        }
-
-# ⬇️ AJOUT: Endpoint /kaithheathcheck OBLIGATOIRE pour Leapcell
+    """Vérifie que l'API est configurée"""
+    has_token = bool(os.environ.get("HF_TOKEN"))
+    return {
+        "status": "ready" if has_token else "missing_token",
+        "message": "Utilise l'API Hugging Face - aucun modèle chargé localement"
+    }# ⬇️ AJOUT: Endpoint /kaithheathcheck OBLIGATOIRE pour Leapcell
 @app.get("/kaithheathcheck")
 async def kaith_heathcheck():
     """Healthcheck requis par Leapcell - doit répondre immédiatement"""
