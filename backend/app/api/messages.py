@@ -12,7 +12,8 @@ from app.schemas.message import (
     ConversationWithMessages
 )
 from app.services.message import message_service
-from app.services.mbart_translator import translation as translation_service
+# ⬇️ SUPPRESSION: Import bloquant au niveau module
+# from app.services.mbart_translator import translation as translation_service
 from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.models.message import TranslationStatusEnum
@@ -27,12 +28,7 @@ async def create_conversation(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Create a new conversation.
-    
-    - For 1-on-1 chat: participant_ids should contain one other user
-    - For group chat: set is_group=true and add multiple participants
-    """
+    """Create a new conversation."""
     conversation = await message_service.create_conversation(
         db,
         conversation_create,
@@ -52,11 +48,7 @@ async def get_conversations(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Get all conversations for the current user.
-    
-    Returns conversations sorted by most recent activity.
-    """
+    """Get all conversations for the current user."""
     conversations = await message_service.get_user_conversations(db, current_user.id)
     
     # Transform to ConversationPublic schema
@@ -96,12 +88,7 @@ async def get_conversation_with_messages(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Get a specific conversation with its messages.
-    
-    - **limit**: Number of messages to return (default 50, max 100)
-    - **offset**: Number of messages to skip (for pagination)
-    """
+    """Get a specific conversation with its messages."""
     conv_id = UUID(conversation_id)
     
     # Get messages
@@ -142,9 +129,7 @@ async def send_message(
 ):
     """
     Send a message to another user.
-    
-    - Message will be automatically translated to receiver's preferred language
-    - Creates conversation if it doesn't exist
+    Message will be automatically translated to receiver's preferred language.
     """
     # Send message
     message = await message_service.send_message(db, message_create, current_user.id)
@@ -156,6 +141,9 @@ async def send_message(
     # Translate message if languages differ
     if receiver and receiver.preferred_language != message.original_language:
         try:
+            # ⬇️ IMPORT DIFFÉRÉ ICI - uniquement quand on envoie un message
+            from app.services.mbart_translator import translation as translation_service
+            
             translation = await translation_service.translate_text(
                 text=message.content,
                 source_language=message.original_language,
@@ -201,13 +189,7 @@ async def mark_message_read(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Mark a message as read.
-    
-    - Updates message status to READ
-    - Decrements unread count
-    - Broadcasts read receipt via WebSocket
-    """
+    """Mark a message as read."""
     msg_id = UUID(message_id)
     message = await message_service.mark_message_as_read(db, msg_id, current_user.id)
     
@@ -227,10 +209,6 @@ async def delete_message(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """
-    Delete a message.
-    
-    Only the sender can delete their own messages.
-    """
+    """Delete a message."""
     await message_service.delete_message(db, UUID(message_id), current_user.id)
     return None
