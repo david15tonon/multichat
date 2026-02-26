@@ -39,7 +39,7 @@ email-validator==2.3.0
 
 # Dépendances minimales pour transformers
 tokenizers==0.15.2
-sentencepiece==0.1.99
+sentencepiece==0.2.0
 huggingface-hub==0.21.3
 safetensors==0.4.2
 numpy==1.26.4
