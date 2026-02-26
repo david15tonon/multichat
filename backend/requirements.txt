@@ -1,98 +1,23 @@
-# ============================================
-# API Framework & Serveur
-# ============================================
+# API Framework
 fastapi==0.129.0
-uvicorn[standard]==0.41.0
-python-multipart==0.0.22
-websockets==16.0
-starlette==0.52.1
+uvicorn[standard]
+python-multipart
 
-# ============================================
-# Authentification et sécurité
-# ============================================
-python-jose[cryptography]==3.3.0
-passlib[bcrypt]==1.7.4
-python-dotenv==1.2.1
+# Authentification
+python-jose[cryptography]
+passlib[bcrypt]
 
-# ============================================
-# Base de données (Async - plus léger)
-# ============================================
+# Base de données
 sqlalchemy==2.0.0
-asyncpg==0.29.0
 alembic==1.12.0
+asyncpg
 
-# ============================================
-# Validation des données
-# ============================================
+# Hugging Face API (le seul ajout pour la traduction !)
+huggingface_hub
+# Utilitaires
+python-dotenv==1.0.0
+httpx==0.28.0
+websockets==16.0
 pydantic==2.12.5
 pydantic-settings==2.13.0
-pydantic-extra-types==2.11.0
-pydantic-core==2.41.5
 email-validator==2.3.0
-
-# ============================================
-# IA / ML - VERSION ALLÉGÉE CPU
-# ============================================
-
-
-
-
-# Dépendances minimales pour transformers
-tokenizers==0.15.2
-sentencepiece==0.2.0
-huggingface-hub==0.21.3
-safetensors==0.4.2
-numpy==1.26.4
-
-# ============================================
-# HTTP & Utilitaires
-# ============================================
-httpx==0.28.1
-httpcore==1.0.9
-h11==0.16.0
-certifi==2026.1.4
-urllib3==2.6.3
-anyio==4.12.1
-idna==3.11
-sniffio==1.3.1
-
-# ============================================
-# Utilitaires système
-# ============================================
-click==8.3.1
-typer==0.12.0
-typing-extensions==4.15.0
-annotated-types==0.7.0
-packaging==23.2
-PyYAML==6.0.1
-regex==2023.12.25
-tqdm==4.66.2
-filelock==3.13.1
-fsspec==2024.2.0
-joblib==1.3.2
-
-# ============================================
-# Parsing & Texte
-# ============================================
-markdown-it-py==3.0.0
-mdurl==0.1.2
-Pygments==2.17.2
-
-# ============================================
-# JSON & Serialization
-# ============================================
-orjson==3.9.15
-ujson==5.9.0
-
-# ============================================
-# SUPPRIMÉS (trop lourds ou inutiles pour Serverless):
-# ============================================
-# tiktoken==0.12.0            
-
-# ============================================
-# Variables d'environnement recommandées pour Leapcell:
-# HF_HUB_DISABLE_TELEMETRY=1
-# HF_HUB_OFFLINE=1
-# TRANSFORMERS_OFFLINE=1
-# TRANSFORMERS_VERBOSITY=error
-# ============================================
