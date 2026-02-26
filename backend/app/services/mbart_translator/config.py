@@ -1,5 +1,5 @@
-# Configuration des langues supportées et des paramètres par défaut
 from enum import Enum
+from typing import Dict, Any
 
 class Language(str, Enum):
     FR = "fr"
@@ -17,8 +17,8 @@ class Tone(str, Enum):
     STANDARD = "standard"
     FORMAL = "formal"
 
-# Mapping vers les codes mBART
-MBART_LANG_CODES = {
+# Mapping des codes de langue pour l'API
+HF_LANG_CODES = {
     Language.FR: "fr_XX",
     Language.EN: "en_XX",
     Language.ES: "es_XX",
@@ -30,25 +30,21 @@ MBART_LANG_CODES = {
     Language.AR: "ar_AR",
 }
 
-# Paramètres de génération selon le ton
+# Modèle à utiliser (version fastest pour performance)
+DEFAULT_MODEL = "facebook/mbart-large-50-many-to-many-mmt:fastest"
+
+# Paramètres de tonalité (pour pré/post traitement)
 TONE_PARAMS = {
     Tone.CASUAL: {
-        "temperature": 0.8,
-        "do_sample": True,
-        "top_p": 0.9,
+        "prepend": "Hey, ",
+        "temperature": 0.9,
     },
     Tone.STANDARD: {
-        "temperature": 1.0,
-        "do_sample": False,
-        "num_beams": 4,
+        "prepend": "",
+        "temperature": 0.7,
     },
     Tone.FORMAL: {
-        "temperature": 0.9,
-        "do_sample": True,
-        "top_p": 0.95,
-        "repetition_penalty": 1.2,
-    },
+        "prepend": "Dear sir/madam, ",
+        "temperature": 0.5,
+    }
 }
-
-# Modèle par défaut
-DEFAULT_MODEL_NAME = "facebook/mbart-large-50-many-to-many-mmt"
