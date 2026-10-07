@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.api import api_router
 from app.db.session import init_db, close_db, reset_presence
+from app.websocket.manager import manager
 
 
 @asynccontextmanager
@@ -23,11 +24,15 @@ async def lifespan(app: FastAPI):
     # plus aucune session n'existe : au démarrage, personne n'est connecté.
     await reset_presence()
     print("✅ Présence réinitialisée")
+
+    await manager.startup()
+    print(f"✅ Diffusion : {'Redis' if manager.distributed else 'mémoire (mono-instance)'}")
     
     yield
     
     # Shutdown
     print("👋 Shutting down MultiChat API...")
+    await manager.shutdown()
     await close_db()
     print("✅ Database connections closed")
 

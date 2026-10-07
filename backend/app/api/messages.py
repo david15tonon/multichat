@@ -39,9 +39,9 @@ async def create_conversation(
     )
     
     # Join WebSocket room for real-time updates
-    manager.join_conversation(current_user.id, conversation.id)
+    await manager.join_conversation(current_user.id, conversation.id)
     for participant_id in conversation_create.participant_ids:
-        manager.join_conversation(participant_id, conversation.id)
+        await manager.join_conversation(participant_id, conversation.id)
 
     # `Conversation.participants` contient des ConversationParticipant, pas des
     # User : on construit la réponse explicitement, comme GET /conversations.

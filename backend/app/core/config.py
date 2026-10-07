@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 10
 
+    # Redis — relais de diffusion entre instances (serverless). Vide, le
+    # gestionnaire de connexions retombe en mémoire, ce qui convient en
+    # développement local mais pas à plusieurs instances.
+    REDIS_URL: Optional[str] = None
+
     # CORS
     BACKEND_CORS_ORIGINS: list = [
         "http://localhost:3000",
@@ -48,10 +53,31 @@ class Settings(BaseSettings):
         extra = "ignore"
 
 
+def _normalize_database_url(url: str) -> str:
+    """Impose un pilote asynchrone à l'URL de base de données.
+
+    Les hébergeurs (Neon, Supabase, Heroku…) fournissent des URL en
+    `postgres://` ou `postgresql://`, que SQLAlchemy résout vers psycopg2 —
+    un pilote SYNCHRONE, incompatible avec `create_async_engine`. On force
+    donc le pilote asyncpg, sans toucher aux URL qui en déclarent déjà un.
+    """
+    if "+" in url.split("://", 1)[0]:
+        return url
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+asyncpg://", 1)
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    if url.startswith("sqlite://"):
+        return url.replace("sqlite://", "sqlite+aiosqlite://", 1)
+    return url
+
+
 @lru_cache()
 def get_settings() -> Settings:
     """Get cached settings instance"""
-    return Settings()
+    settings = Settings()
+    settings.DATABASE_URL = _normalize_database_url(settings.DATABASE_URL)
+    return settings
 
 
 settings = get_settings()

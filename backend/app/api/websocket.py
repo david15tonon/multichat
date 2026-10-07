@@ -161,7 +161,7 @@ async def websocket_endpoint(
                 target_id = UUID(target)
 
                 # Prévenir l'appelant plutôt que de laisser sonner dans le vide.
-                if not manager.is_user_online(target_id):
+                if not await manager.is_user_online(target_id):
                     await websocket.send_json({
                         "type": "call:unavailable",
                         "data": {"user_id": target},
@@ -176,7 +176,9 @@ async def websocket_endpoint(
                 )
 
             elif message_type == "ping":
-                # Heartbeat
+                # Heartbeat : il repousse aussi l'expiration de la présence
+                # dans Redis, qui se purge seule si une instance disparaît.
+                await manager.refresh_presence(user_id)
                 await websocket.send_json({"type": "pong"})
             
             else:
