@@ -1,0 +1,27 @@
+# Le déploiement par CLI téléverse le dossier de travail, pas un clone git :
+# sans cette liste, les fichiers locaux non versionnés partent en production.
+# C'est ainsi qu'un VITE_API_URL pointant sur 127.0.0.1 s'est retrouvé
+# embarqué dans le build public.
+
+.env
+.env.*
+!.env.example
+
+# Environnements et artefacts locaux
+.venv/
+backend/.venv/
+node_modules/
+**/node_modules/
+__pycache__/
+**/__pycache__/
+*.pyc
+dist/
+**/dist/
+
+# Base SQLite de développement
+*.db
+
+# Suivi local et tests, inutiles au déploiement
+tasks/
+tests/
+.vercel/
