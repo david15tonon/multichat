@@ -185,8 +185,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
     <Container>
       {!isConnected && (
         <DisconnectedMessage>
-          <Icon name="offline" size={16} /> Reconnecting...
-        </DisconnectedMessage>
+          <Icon name="offline" size={16} />{t('chat.reconnecting')}</DisconnectedMessage>
       )}
 
       <ToneRow>

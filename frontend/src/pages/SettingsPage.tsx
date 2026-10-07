@@ -244,9 +244,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   <CardTitle>{t('settings.card.multilingual')}</CardTitle>
                 </div>
               </CardHeader>
-              <CardDescription>
-                Traduisez vos émotions sans frontières.
-              </CardDescription>
+              <CardDescription>{t('settings.card.tagline')}</CardDescription>
               <LanguagePicker selected={language} onChange={onLanguageChange} />
             </Card>
 
@@ -254,23 +252,17 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
               <FeatureCard>
                 <Icon name="translate" size={32} />
                 <FeatureTitle>{t('settings.card.realtime')}</FeatureTitle>
-                <FeatureDescription>
-                  Messages traduits instantanément dans votre langue
-                </FeatureDescription>
+                <FeatureDescription>{t('settings.card.realtimeDescription')}</FeatureDescription>
               </FeatureCard>
               <FeatureCard>
                 <Icon name="globe" size={32} />
                 <FeatureTitle>{t('settings.card.languages')}</FeatureTitle>
-                <FeatureDescription>
-                  Français, Anglais, Espagnol et plus encore
-                </FeatureDescription>
+                <FeatureDescription>{t('settings.card.languagesDescription')}</FeatureDescription>
               </FeatureCard>
               <FeatureCard>
                 <Icon name="check" size={32} />
                 <FeatureTitle>{t('settings.card.accuracy')}</FeatureTitle>
-                <FeatureDescription>
-                  IA avancée pour des traductions naturelles
-                </FeatureDescription>
+                <FeatureDescription>{t('settings.card.accuracyDescription')}</FeatureDescription>
               </FeatureCard>
             </FeatureGrid>
           </>
@@ -286,19 +278,14 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <CardTitle>{t('settings.card.toneTitle')}</CardTitle>
               </div>
             </CardHeader>
-            <CardDescription>
-              Configurez votre ton selon vos messagerie Despi'sez posirique et ous arrauvet
-              salutations de intelligente.
-            </CardDescription>
+            <CardDescription>{t('settings.card.toneDescription')}</CardDescription>
 
             <Section>
               <SectionTitle>{t('settings.tone.sectionTitle')}</SectionTitle>
               <ToneSelector selected={tone} onChange={onToneChange} variant="full" />
             </Section>
 
-            <p style={{ fontSize: '14px', color: '#8E8E93', marginTop: '16px' }}>
-              Vous pourrez modifier ces réglages plus tard.
-            </p>
+            <p style={{ fontSize: '14px', color: '#8E8E93', marginTop: '16px' }}>{t('settings.card.laterNote')}</p>
           </Card>
         )}
         {activeTab === 'account' && (

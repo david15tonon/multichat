@@ -334,9 +334,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
             fullWidth 
             loading={isLoading}
             disabled={!isPasswordValid}
-          >
-            S'inscrire →
-          </Button>
+          >{t('signup.submit')} →</Button>
         </Form>
 
         <Divider>

@@ -177,6 +177,29 @@ export const fr = {
   'settings.card.accuracy': 'Précision élevée',
   'settings.card.toneTitle': 'Adaptez votre ton selon vos interlocuteurs',
 
+  // Cartes des réglages — descriptions
+  'settings.card.tagline': 'Traduisez vos émotions sans frontières.',
+  'settings.card.realtimeDescription': 'Messages traduits instantanément dans votre langue',
+  'settings.card.languagesDescription': 'Français, anglais, espagnol et bien d’autres',
+  'settings.card.accuracyDescription': 'Une IA récente, pour des traductions qui sonnent juste',
+  'settings.card.toneDescription':
+    'Choisissez le registre de vos messages : décontracté entre amis, soutenu pour un échange professionnel. La traduction s’y adapte.',
+  'settings.card.laterNote': 'Vous pourrez modifier ces réglages à tout moment.',
+
+  // Sélecteur de langue
+  'language.preferred': 'LANGUE PRÉFÉRÉE',
+
+  // Mot de passe oublié — détail
+  'forgot.intro':
+    'Pas de panique. Indiquez votre adresse et nous vous enverrons un lien pour en choisir un nouveau.',
+  'forgot.sentTo': 'Nous avons envoyé un lien de réinitialisation à :',
+  'forgot.checkInbox':
+    'Cliquez sur le lien reçu pour choisir un nouveau mot de passe. Sans message d’ici quelques minutes, pensez à regarder dans vos indésirables.',
+  'forgot.send': 'Envoyer le lien',
+
+  // Composeur
+  'chat.reconnecting': 'Reconnexion…',
+
   // 404
   'notFound.message':
     'Cette page n’existe pas. Elle a peut-être été déplacée, ou l’adresse comporte une faute de frappe.',
@@ -352,6 +375,29 @@ export const en: Dictionary = {
   'settings.card.languages': '9+ languages',
   'settings.card.accuracy': 'High accuracy',
   'settings.card.toneTitle': 'Adapt your tone to the person you write to',
+
+  // Settings cards — descriptions
+  'settings.card.tagline': 'Translate your feelings across borders.',
+  'settings.card.realtimeDescription': 'Messages translated instantly into your language',
+  'settings.card.languagesDescription': 'French, English, Spanish and many more',
+  'settings.card.accuracyDescription': 'Recent AI, for translations that read naturally',
+  'settings.card.toneDescription':
+    'Choose the register of your messages: casual among friends, formal for professional exchanges. The translation follows.',
+  'settings.card.laterNote': 'You can change these settings at any time.',
+
+  // Language picker
+  'language.preferred': 'PREFERRED LANGUAGE',
+
+  // Forgot password — detail
+  'forgot.intro':
+    'No panic. Enter your address and we will send you a link to choose a new one.',
+  'forgot.sentTo': 'We sent a reset link to:',
+  'forgot.checkInbox':
+    'Click the link you received to choose a new password. If nothing arrives within a few minutes, check your spam folder.',
+  'forgot.send': 'Send the link',
+
+  // Composer
+  'chat.reconnecting': 'Reconnecting…',
 
   // 404
   'notFound.message':

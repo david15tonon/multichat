@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useT } from '../../i18n/I18nContext';
 import { Language } from '../../types';
 import { Icon } from '../atoms/Icon';
 
@@ -137,8 +138,10 @@ const NativeName = styled.span`
 export const LanguagePicker: React.FC<LanguagePickerProps> = ({
   selected,
   onChange,
-  label = 'LANGUE PRÉFÉRÉE',
+  label,
 }) => {
+  const t = useT();
+  const titre = label ?? t('language.preferred');
   const [isOpen, setIsOpen] = useState(false);
   const selectedLanguage = languages.find((lang) => lang.code === selected);
 
@@ -149,7 +152,7 @@ export const LanguagePicker: React.FC<LanguagePickerProps> = ({
 
   return (
     <Container>
-      {label && <Label>{label}</Label>}
+      {titre && <Label>{titre}</Label>}
       <SelectWrapper>
         <Select onClick={() => setIsOpen(!isOpen)}>
           <SelectedLanguage>

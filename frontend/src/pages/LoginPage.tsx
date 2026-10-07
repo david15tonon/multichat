@@ -225,7 +225,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           />
 
           <Button type="submit" variant="primary" fullWidth loading={isLoading}>
-            {t('login.submit')}
+            {t('login.submit')} →
           </Button>
         </Form>
 

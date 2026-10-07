@@ -188,19 +188,12 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
               <Icon name="check" size={32} />
             </ResetIcon>
             <Title>{t('forgot.sent')}</Title>
-            <Description>
-              Nous avons envoyé un lien de réinitialisation à :
-            </Description>
+            <Description>{t('forgot.sentTo')}</Description>
             <ResetEmail>{email}</ResetEmail>
-            <Description>
-              Cliquez sur le lien dans l'email pour réinitialiser votre mot de passe.
-              Si vous ne voyez pas l'email, vérifiez vos spams.
-            </Description>
+            <Description>{t('forgot.checkInbox')}</Description>
           </ResetInfo>
 
-          <BackButton onClick={onBackToLogin}>
-            ← Retour à la connexion
-          </BackButton>
+          <BackButton onClick={onBackToLogin}>← {t('forgot.backToLogin')}</BackButton>
         </Content>
       </Container>
     );
@@ -216,10 +209,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
         </LogoSection>
 
         <Title>{t('forgot.title')}</Title>
-        <Description>
-          Pas de panique ! Entrez votre email et nous vous enverrons
-          un lien pour réinitialiser votre mot de passe.
-        </Description>
+        <Description>{t('forgot.intro')}</Description>
 
         {error && (
           <Message $type="error">
@@ -245,14 +235,10 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
             required
           />
 
-          <Button type="submit" variant="primary" fullWidth loading={isLoading}>
-            Envoyer le lien
-          </Button>
+          <Button type="submit" variant="primary" fullWidth loading={isLoading}>{t('forgot.send')}</Button>
         </Form>
 
-        <BackButton onClick={onBackToLogin}>
-          ← Retour à la connexion
-        </BackButton>
+        <BackButton onClick={onBackToLogin}>← {t('forgot.backToLogin')}</BackButton>
       </Content>
     </Container>
   );
