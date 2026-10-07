@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Message } from '../../types';
 import { Avatar } from '../atoms/Avatar';
 import { Icon } from '../atoms/Icon';
-import { Theme } from '../../styles/theme';
 
 export interface MessageBubbleProps {
   message: Message;
@@ -33,6 +32,8 @@ const BubbleContent = styled.div<{ $isOwn: boolean }>`
 const BubbleWrapper = styled.div<{ $isOwn: boolean;  }>`
   background-color: ${({ theme, $isOwn }) =>
     $isOwn ? theme.colors.primary.yellow : theme.colors.neutral.white};
+  color: ${({ theme, $isOwn }) =>
+    $isOwn ? theme.colors.neutral.onBright : theme.colors.neutral.black};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   padding: ${({ theme }) => theme.spacing.md};
@@ -43,7 +44,7 @@ const BubbleWrapper = styled.div<{ $isOwn: boolean;  }>`
 
 const MessageText = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.neutral.black};
+  color: inherit;
   font-size: ${({ theme }) => theme.typography.fontSize.base};
   line-height: 1.5;
   word-wrap: break-word;
@@ -67,9 +68,26 @@ const TranslationLabel = styled.div`
   margin-top: ${({ theme }) => theme.spacing.xs};
 `;
 
+const TranslationToggle = styled(TranslationLabel).attrs({ as: 'button' })`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: inherit;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 const TranslatedText = styled.p`
   margin: 0;
-  color: ${({ theme }) => theme.colors.neutral.gray};
+  /* Hérite du fond puis s'atténue : lisible sur la bulle jaune comme sur la
+     surface sombre, là où une couleur grise figée échouait sur l'une des deux. */
+  color: inherit;
+  opacity: 0.75;
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
   line-height: 1.5;
   word-wrap: break-word;
@@ -111,7 +129,7 @@ const ErrorBanner = styled.div`
   gap: ${({ theme }) => theme.spacing.xs};
   padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
   background-color: ${({ theme }) => theme.colors.status.error};
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   font-size: ${({ theme }) => theme.typography.fontSize.xs};
   margin-top: ${({ theme }) => theme.spacing.xs};
@@ -144,7 +162,20 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 }) => {
   const [showTranslatedText, setShowTranslatedText] = useState(showTranslation);
 
-  const hasTranslation = message.translatedContent && message.translatedContent !== message.content;
+  const hasTranslation = Boolean(
+    message.translatedContent && message.translatedContent !== message.content,
+  );
+
+  // Un message REÇU s'ouvre sur la langue du lecteur : c'est tout l'intérêt du
+  // produit. L'original passe dessous, consultable d'un clic.
+  // Un message ENVOYÉ garde en tête ce qu'on a écrit, et montre dessous ce que
+  // le destinataire va lire.
+  const primaryText = !isOwn && hasTranslation ? message.translatedContent! : message.content;
+  const secondaryText = !isOwn && hasTranslation ? message.content : message.translatedContent;
+
+  const secondaryLabel = isOwn
+    ? `TRADUIT VERS ${(message.targetLanguage ?? '').toUpperCase()}`.trim()
+    : `ORIGINAL EN ${message.originalLanguage.toUpperCase()}`;
 
   return (
     <Container $isOwn={isOwn}>
@@ -152,25 +183,30 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
 
       <BubbleContent $isOwn={isOwn}>
         <BubbleWrapper $isOwn={isOwn}>
-          <MessageText>{message.content}</MessageText>
+          <MessageText>{primaryText}</MessageText>
 
-          {hasTranslation && showTranslatedText && (
+          {hasTranslation && (
             <>
               <TranslationDivider />
-              <TranslationLabel>
+              <TranslationToggle
+                type="button"
+                onClick={() => setShowTranslatedText((shown) => !shown)}
+                aria-expanded={showTranslatedText}
+                title={showTranslatedText ? 'Masquer l’original' : 'Afficher l’original'}
+              >
                 <Icon name="translate" size={12} />
                 {message.translationStatus === 'translating'
                   ? 'Traduction en cours...'
-                  : 'AUTO-TRADUIT DU ' + message.originalLanguage.toUpperCase()}
-              </TranslationLabel>
-              <TranslatedText>{message.translatedContent}</TranslatedText>
+                  : secondaryLabel}
+              </TranslationToggle>
+              {showTranslatedText && <TranslatedText>{secondaryText}</TranslatedText>}
             </>
           )}
 
           {message.translationStatus === 'failed' && (
             <ErrorBanner>
               <Icon name="alert" size={12} />
-              TRANSLATION FAILED
+              TRADUCTION INDISPONIBLE
             </ErrorBanner>
           )}
         </BubbleWrapper>

@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.api import api_router
-from app.db.session import init_db, close_db
+from app.db.session import init_db, close_db, reset_presence
 
 
 @asynccontextmanager
@@ -17,6 +17,12 @@ async def lifespan(app: FastAPI):
     print("🚀 Starting MultiChat API...")
     await init_db()
     print("✅ Database initialized")
+
+    # `is_online` est positionné à la connexion et à la déconnexion WebSocket.
+    # Un arrêt brutal laisse donc des utilisateurs marqués en ligne alors que
+    # plus aucune session n'existe : au démarrage, personne n'est connecté.
+    await reset_presence()
+    print("✅ Présence réinitialisée")
     
     yield
     
@@ -50,8 +56,8 @@ app = FastAPI(
     
     1. **Register**: `POST /api/auth/register`
     2. **Login**: `POST /api/auth/login` (get JWT token)
-    3. **Connect WebSocket**: `ws://localhost:8000/ws?token=YOUR_TOKEN`
-    4. **Send Messages**: `POST /api/v1/messages/send`
+    3. **Connect WebSocket**: `ws://localhost:8000/api/ws?token=YOUR_TOKEN`
+    4. **Send Messages**: `POST /api/messages/send`
     
     ### Authentication:
     
@@ -94,33 +100,12 @@ async def root():
         "health": "/health"
     }
 
-# ⬇️ SUPPRESSION: On ne importe plus au niveau module
-# from app.services.mbart_translator import MBartTranslator
+# Les endpoints /translate et /translate/status ont été supprimés : ils levaient
+# NameError à chaque appel (MBartTranslator jamais importé, `os` jamais importé).
+# La traduction est exposée par POST /api/settings/translate.
 
-# Variable globale pour le traducteur
-translator_instance = None
-@app.post("/translate")
-async def translate_endpoint(
-    text: str, 
-    source: str, 
-    target: str, 
-    tone: str = "standard"
-):
-    """
-    Traduction via l'API Hugging Face (instantané, sans chargement)
-    """
-    translator = await MBartTranslator.get_instance()
-    result = await translator.translate(text, source, target, tone)
-    return result
 
-@app.get("/translate/status")
-async def translation_status():
-    """Vérifie que l'API est configurée"""
-    has_token = bool(os.environ.get("HF_TOKEN"))
-    return {
-        "status": "ready" if has_token else "missing_token",
-        "message": "Utilise l'API Hugging Face - aucun modèle chargé localement"
-    }# ⬇️ AJOUT: Endpoint /kaithheathcheck OBLIGATOIRE pour Leapcell
+# Healthcheck requis par l'hébergeur Leapcell
 @app.get("/kaithheathcheck")
 async def kaith_heathcheck():
     """Healthcheck requis par Leapcell - doit répondre immédiatement"""

@@ -1,6 +1,6 @@
-from typing import Optional
+from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from fastapi import HTTPException, status
 from uuid import UUID
 
@@ -70,6 +70,33 @@ class AuthService:
         )
         return result.scalar_one_or_none()
     
+    @staticmethod
+    async def search_users(
+        db: AsyncSession,
+        query: str,
+        exclude_user_id: UUID,
+        limit: int = 20,
+    ) -> List[User]:
+        """Cherche des utilisateurs par nom ou e-mail (insensible à la casse).
+
+        Sans cette recherche, démarrer une conversation exigerait de connaître
+        l'UUID de son interlocuteur : l'application était inutilisable.
+        L'utilisateur courant est exclu — on ne se parle pas à soi-même.
+        """
+        needle = f"%{query.strip()}%"
+        stmt = (
+            select(User)
+            .where(
+                User.id != exclude_user_id,
+                User.is_active.is_(True),
+                or_(User.full_name.ilike(needle), User.email.ilike(needle)),
+            )
+            .order_by(User.full_name)
+            .limit(limit)
+        )
+        result = await db.execute(stmt)
+        return list(result.scalars().all())
+
     @staticmethod
     async def get_user_by_email(db: AsyncSession, email: str) -> Optional[User]:
         """Get user by email"""

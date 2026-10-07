@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Theme } from '../../styles/theme';
 
 export interface BadgeProps {
   children: React.ReactNode;

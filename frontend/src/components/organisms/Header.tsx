@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useThemeMode } from '../../contexts/ThemeContext';
 import { Icon } from '../atoms/Icon';
 import { Avatar } from '../atoms/Avatar';
-import { Badge } from '../atoms/Badge';
 
 export interface HeaderProps {
   title?: string;
@@ -11,7 +11,11 @@ export interface HeaderProps {
   showSettingsButton?: boolean;
   showThemeToggle?: boolean;
   userAvatar?: string;
+  /** Présence de la personne dont l'en-tête porte le nom. */
   isOnline?: boolean;
+  /** Mon propre lien temps réel avec le serveur. Deux notions distinctes :
+   *  les confondre faisait annoncer « en ligne » un contact déconnecté. */
+  isConnected?: boolean;
   onBackClick?: () => void;
   onSettingsClick?: () => void;
   onThemeToggle?: () => void;
@@ -27,6 +31,7 @@ const HeaderContainer = styled.header<{ $backgroundColor?: string }>`
   padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
   background-color: ${({ theme, $backgroundColor }) =>
     $backgroundColor || theme.colors.primary.yellow};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
   border-bottom: 3px solid ${({ theme }) => theme.colors.neutral.black};
   min-height: 72px;
   position: sticky;
@@ -72,7 +77,7 @@ const TitleSection = styled.div`
 const Title = styled.h1`
   font-size: ${({ theme }) => theme.typography.fontSize.xl};
   font-weight: ${({ theme }) => theme.typography.fontWeight.black};
-  color: ${({ theme }) => theme.colors.neutral.black};
+  color: inherit;
   margin: 0;
 `;
 
@@ -127,6 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
   showThemeToggle = true,
   userAvatar,
   isOnline,
+  isConnected,
   onBackClick,
   onSettingsClick,
   onThemeToggle,
@@ -134,6 +140,7 @@ export const Header: React.FC<HeaderProps> = ({
   rightAction,
   backgroundColor,
 }) => {
+  const { resolved, toggle } = useThemeMode();
   return (
     <HeaderContainer $backgroundColor={backgroundColor}>
       <LeftSection>
@@ -147,7 +154,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <TitleSection>
           <Title>{title}</Title>
-          {subtitle && (
+          {(subtitle || isOnline !== undefined) && (
             <Subtitle>
               {isOnline !== undefined && (
                 <OnlineIndicator>{isOnline ? 'EN LIGNE' : 'HORS LIGNE'}</OnlineIndicator>
@@ -160,16 +167,20 @@ export const Header: React.FC<HeaderProps> = ({
 
       <RightSection>
         {isOnline !== undefined && (
-          <ConnectionBadge $isOnline={isOnline}>
-            {isOnline ? 'CONNECTED' : 'NO CONNECTION'}
+          <ConnectionBadge $isOnline={isConnected ?? false}>
+            {isConnected ? 'CONNECTÉ' : 'HORS CONNEXION'}
           </ConnectionBadge>
         )}
 
         {rightAction}
 
         {showThemeToggle && (
-          <IconButton onClick={onThemeToggle}>
-            <Icon name="moon" size={24} />
+          <IconButton
+            onClick={onThemeToggle ?? toggle}
+            aria-label={resolved === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
+            title={resolved === 'dark' ? 'Mode clair' : 'Mode sombre'}
+          >
+            <Icon name={resolved === 'dark' ? 'sun' : 'moon'} size={24} />
           </IconButton>
         )}
 

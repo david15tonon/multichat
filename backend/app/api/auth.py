@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.session import get_db
@@ -136,6 +138,20 @@ async def get_current_user_info(
     Requires authentication.
     """
     return current_user
+
+
+@router.get("/users/search", response_model=List[UserPublic])
+async def search_users(
+    q: str = Query(..., min_length=1, max_length=255, description="Nom ou e-mail"),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Search users by name or email, to start a conversation.
+
+    Excludes the current user. Requires authentication.
+    """
+    return await auth_service.search_users(db, q, current_user.id)
 
 
 @router.get("/users/{user_id}", response_model=UserPublic)

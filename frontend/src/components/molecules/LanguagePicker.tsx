@@ -74,6 +74,7 @@ const LanguageIcon = styled.div`
   align-items: center;
   justify-content: center;
   background-color: ${({ theme }) => theme.colors.primary.yellow};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
   border: 2px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: 50%;
 `;

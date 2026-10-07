@@ -10,6 +10,15 @@ from app.services.auth import auth_service
 
 router = APIRouter()
 
+# Types d'événements de signalisation WebRTC relayés tels quels au destinataire.
+CALL_SIGNAL_TYPES = {
+    "call:offer",
+    "call:answer",
+    "call:ice",
+    "call:hangup",
+    "call:reject",
+}
+
 
 @router.websocket("/ws")
 async def websocket_endpoint(
@@ -22,7 +31,7 @@ async def websocket_endpoint(
     
     **Connection:**
     ```javascript
-    const ws = new WebSocket('ws://localhost:8000/ws?token=YOUR_JWT_TOKEN');
+    const ws = new WebSocket('ws://localhost:8000/api/ws?token=YOUR_JWT_TOKEN');
     ```
     
     **Message Types:**
@@ -138,6 +147,34 @@ async def websocket_endpoint(
                     conversation_id
                 )
             
+            elif message_type in CALL_SIGNAL_TYPES:
+                # Signalisation WebRTC : le serveur ne fait que relayer vers le
+                # destinataire. Le média est en pair-à-pair, rien n'est stocké.
+                target = message_data.get("to")
+                if not target:
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": f"{message_type} requires a 'to' field",
+                    })
+                    continue
+
+                target_id = UUID(target)
+
+                # Prévenir l'appelant plutôt que de laisser sonner dans le vide.
+                if not manager.is_user_online(target_id):
+                    await websocket.send_json({
+                        "type": "call:unavailable",
+                        "data": {"user_id": target},
+                    })
+                    continue
+
+                relayed = {k: v for k, v in message_data.items() if k != "to"}
+                relayed["from"] = str(user_id)
+                await manager.send_personal_message(
+                    {"type": message_type, "data": relayed},
+                    target_id,
+                )
+
             elif message_type == "ping":
                 # Heartbeat
                 await websocket.send_json({"type": "pong"})

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useThemeMode } from '../contexts/ThemeContext';
 import { Logo, Button, Input, Icon } from '../components/atoms';
 
 export interface ForgotPasswordPageProps {
@@ -62,6 +63,7 @@ const Illustration = styled.div`
   width: 200px;
   height: 150px;
   background-color: ${({ theme }) => theme.colors.primary.yellow};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   display: flex;
@@ -121,7 +123,7 @@ const Message = styled.div<{ $type: 'error' | 'success' }>`
   padding: ${({ theme }) => theme.spacing.md};
   background-color: ${({ theme, $type }) => 
     $type === 'error' ? theme.colors.status.error : theme.colors.status.online};
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
@@ -150,7 +152,7 @@ const ResetIcon = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
 `;
 
 const ResetEmail = styled.div`
@@ -182,6 +184,8 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
   error,
   success,
 }) => {
+  const { resolved, toggle: toggleTheme } = useThemeMode();
+  const isDark = resolved === 'dark';
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -194,8 +198,12 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
   if (submitted && success) {
     return (
       <Container>
-        <ThemeToggle>
-          <Icon name="moon" size={24} />
+        <ThemeToggle
+            type="button"
+            onClick={toggleTheme}
+            aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          >
+            <Icon name={isDark ? 'sun' : 'moon'} size={24} />
         </ThemeToggle>
 
         <Content>
@@ -229,8 +237,12 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
 
   return (
     <Container>
-      <ThemeToggle>
-        <Icon name="moon" size={24} />
+      <ThemeToggle
+          type="button"
+          onClick={toggleTheme}
+          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+        >
+          <Icon name={isDark ? 'sun' : 'moon'} size={24} />
       </ThemeToggle>
 
       <Content>
