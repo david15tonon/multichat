@@ -54,22 +54,53 @@ class Settings(BaseSettings):
 
 
 def _normalize_database_url(url: str) -> str:
-    """Impose un pilote asynchrone à l'URL de base de données.
+    """Rend une URL d'hébergeur utilisable par SQLAlchemy en mode asynchrone.
 
-    Les hébergeurs (Neon, Supabase, Heroku…) fournissent des URL en
-    `postgres://` ou `postgresql://`, que SQLAlchemy résout vers psycopg2 —
-    un pilote SYNCHRONE, incompatible avec `create_async_engine`. On force
-    donc le pilote asyncpg, sans toucher aux URL qui en déclarent déjà un.
+    Deux corrections, toutes deux nécessaires en production :
+
+    1. Le pilote. Les hébergeurs émettent `postgres://` ou `postgresql://`,
+       que SQLAlchemy résout vers psycopg2 — synchrone, donc incompatible
+       avec `create_async_engine`.
+
+    2. Les paramètres libpq. Neon ajoute `sslmode` et `channel_binding`, que
+       asyncpg ne connaît pas : il lève
+       `TypeError: connect() got an unexpected keyword argument`. On traduit
+       `sslmode` en `ssl`, que asyncpg comprend, et on écarte le reste.
     """
-    if "+" in url.split("://", 1)[0]:
+    from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+    # SQLite est traité à part : `urlunsplit` écrase le triple slash de
+    # `sqlite:///./fichier.db`, et aucun paramètre libpq ne s'y applique.
+    if url.startswith("sqlite+"):
         return url
-    if url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql+asyncpg://", 1)
-    if url.startswith("postgresql://"):
-        return url.replace("postgresql://", "postgresql+asyncpg://", 1)
     if url.startswith("sqlite://"):
         return url.replace("sqlite://", "sqlite+aiosqlite://", 1)
-    return url
+
+    parts = urlsplit(url)
+    scheme = parts.scheme
+
+    if "+" not in scheme:
+        if scheme == "postgres":
+            scheme = "postgresql+asyncpg"
+        elif scheme == "postgresql":
+            scheme = "postgresql+asyncpg"
+
+    if not scheme.startswith("postgresql+asyncpg"):
+        return urlunsplit((scheme, parts.netloc, parts.path, parts.query, parts.fragment))
+
+    # Paramètres propres à libpq, inconnus d'asyncpg.
+    LIBPQ_SEULEMENT = {"channel_binding", "options", "target_session_attrs", "gssencmode"}
+    retenus = []
+    for cle, valeur in parse_qsl(parts.query, keep_blank_values=True):
+        if cle in LIBPQ_SEULEMENT:
+            continue
+        if cle == "sslmode":
+            # `disable` est le seul mode où asyncpg veut explicitement rien.
+            retenus.append(("ssl", "disable" if valeur == "disable" else "require"))
+            continue
+        retenus.append((cle, valeur))
+
+    return urlunsplit((scheme, parts.netloc, parts.path, urlencode(retenus), parts.fragment))
 
 
 @lru_cache()

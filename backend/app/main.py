@@ -19,14 +19,17 @@ async def lifespan(app: FastAPI):
     await init_db()
     print("✅ Database initialized")
 
-    # `is_online` est positionné à la connexion et à la déconnexion WebSocket.
-    # Un arrêt brutal laisse donc des utilisateurs marqués en ligne alors que
-    # plus aucune session n'existe : au démarrage, personne n'est connecté.
-    await reset_presence()
-    print("✅ Présence réinitialisée")
-
     await manager.startup()
     print(f"✅ Diffusion : {'Redis' if manager.distributed else 'mémoire (mono-instance)'}")
+
+    # En mono-instance, un arrêt brutal laisse des comptes marqués en ligne :
+    # au démarrage, plus personne n'est connecté, on remet tout à zéro.
+    # En multi-instance (Redis), surtout pas : chaque démarrage à froid
+    # déconnecterait tous les utilisateurs des autres instances. La présence
+    # y vit dans Redis et se purge seule par expiration.
+    if not manager.distributed:
+        await reset_presence()
+        print("✅ Présence réinitialisée")
     
     yield
     

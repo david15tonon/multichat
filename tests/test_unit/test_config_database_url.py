@@ -38,12 +38,37 @@ def test_normalize_database_url_respects_an_explicit_driver(deja_explicite):
     assert _normalize_database_url(deja_explicite) == deja_explicite
 
 
-def test_normalize_database_url_preserves_query_parameters():
-    """Neon ajoute ?sslmode=require : le perdre casserait la connexion."""
+def test_normalize_database_url_drops_libpq_only_parameters():
+    """Régression : `channel_binding` faisait planter le démarrage en production.
+
+    Neon ajoute `sslmode` et `channel_binding`, qui sont des paramètres libpq.
+    asyncpg ne les connaît pas et lève
+    `TypeError: connect() got an unexpected keyword argument`.
+    """
     url = "postgresql://u:p@h/db?sslmode=require&channel_binding=require"
 
-    assert _normalize_database_url(url) == (
-        "postgresql+asyncpg://u:p@h/db?sslmode=require&channel_binding=require"
+    assert _normalize_database_url(url) == "postgresql+asyncpg://u:p@h/db?ssl=require"
+
+
+def test_normalize_database_url_translates_sslmode_to_ssl():
+    """`sslmode` est la syntaxe psycopg2 ; asyncpg attend `ssl`."""
+    assert (
+        _normalize_database_url("postgresql://u:p@h/db?sslmode=disable")
+        == "postgresql+asyncpg://u:p@h/db?ssl=disable"
+    )
+
+
+def test_normalize_database_url_keeps_parameters_asyncpg_understands():
+    assert (
+        _normalize_database_url("postgresql://u:p@h/db?application_name=multichat")
+        == "postgresql+asyncpg://u:p@h/db?application_name=multichat"
+    )
+
+
+def test_normalize_database_url_preserves_sqlite_triple_slash():
+    """`urlunsplit` écrase le triple slash : SQLite est traité à part."""
+    assert _normalize_database_url("sqlite:///./multichat.db") == (
+        "sqlite+aiosqlite:///./multichat.db"
     )
 
 
