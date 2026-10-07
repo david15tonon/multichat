@@ -122,12 +122,17 @@ async def kaith_heathcheck():
 # Health check endpoint
 @app.get("/health", tags=["Health"])
 async def health_check():
-    """
-    Health check endpoint for monitoring
+    """État du service.
+
+    `realtime` indique le mode de diffusion. En « memory », les messages
+    temps réel ne franchissent pas la frontière d'une instance : c'est
+    acceptable sur un serveur unique, pas en serverless. Le surveiller évite
+    de découvrir la bascule silencieuse en production.
     """
     return {
         "status": "healthy",
-        "version": settings.APP_VERSION
+        "version": settings.APP_VERSION,
+        "realtime": "redis" if manager.distributed else "memory",
     }
 
 
