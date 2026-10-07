@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useThemeMode } from '../contexts/ThemeContext';
 import { useT } from '../i18n/I18nContext';
 import { Logo, Button, Input, Icon, VisuallyHidden } from '../components/atoms';
 
@@ -20,27 +19,6 @@ const Container = styled.div`
   background-color: ${({ theme }) => theme.colors.primary.yellow};
   color: ${({ theme }) => theme.colors.neutral.onBright};
   padding: ${({ theme }) => theme.spacing.xl};
-`;
-
-const ThemeToggle = styled.button`
-  position: absolute;
-  top: ${({ theme }) => theme.spacing.lg};
-  right: ${({ theme }) => theme.spacing.lg};
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${({ theme }) => theme.colors.neutral.white};
-  border: 3px solid ${({ theme }) => theme.colors.neutral.black};
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 ${({ theme }) => theme.colors.neutral.black};
-
-  &:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 ${({ theme }) => theme.colors.neutral.black};
-  }
 `;
 
 const Content = styled.div`
@@ -200,9 +178,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   isLoading = false,
   error,
 }) => {
-  const { resolved, toggle: toggleTheme } = useThemeMode();
   const t = useT();
-  const isDark = resolved === 'dark';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -213,13 +189,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
   return (
     <Container>
-      <ThemeToggle
-          type="button"
-          onClick={toggleTheme}
-          aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
-        >
-          <Icon name={isDark ? 'sun' : 'moon'} size={24} />
-      </ThemeToggle>
 
       <Content>
         <LogoSection>
@@ -256,12 +225,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           />
 
           <Button type="submit" variant="primary" fullWidth loading={isLoading}>
-            Connexion →
+            {t('login.submit')}
           </Button>
         </Form>
 
         <Divider>
-          <span>OU</span>
+          <span>{t('common.or')}</span>
         </Divider>
 
         <SocialButtons>

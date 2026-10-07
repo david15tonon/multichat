@@ -12,6 +12,7 @@ import { GlobalStyles } from './styles/GlobalStyles';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ChatProvider, useChatSession } from './contexts/ChatContext';
+import { LightOnly } from './contexts/LightOnly';
 import { AuthI18nProvider, useT } from './i18n/I18nContext';
 import { CallOverlay } from './components/organisms';
 import {
@@ -37,7 +38,8 @@ function RequireAuth({ children }: { children: RouteProps['element'] }) {
 function RedirectIfAuthenticated({ children }: { children: RouteProps['element'] }) {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
-  return isAuthenticated ? <Navigate to="/conversations" replace /> : <>{children}</>;
+  if (isAuthenticated) return <Navigate to="/conversations" replace />;
+  return <LightOnly>{children}</LightOnly>;
 }
 
 function LoginRoute() {
@@ -239,7 +241,7 @@ function AppRoutes() {
         path="/signup"
         element={<RedirectIfAuthenticated><SignupRoute /></RedirectIfAuthenticated>}
       />
-      <Route path="/forgot-password" element={<ForgotPasswordRoute />} />
+      <Route path="/forgot-password" element={<LightOnly><ForgotPasswordRoute /></LightOnly>} />
       <Route
         path="/conversations"
         element={<RequireAuth><ConversationsRoute /></RequireAuth>}
