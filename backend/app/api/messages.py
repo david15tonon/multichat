@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -13,13 +15,14 @@ from app.schemas.message import (
 )
 from app.services.message import message_service
 # ⬇️ SUPPRESSION: Import bloquant au niveau module
-# from app.services.mbart_translator import translation as translation_service
 from app.core.dependencies import get_current_user
 from app.models.user import User
 from app.models.message import TranslationStatusEnum
 from app.websocket.manager import manager
 
 router = APIRouter(prefix="/messages", tags=["Messages"])
+
+logger = logging.getLogger(__name__)
 
 
 @router.post("/conversations", response_model=ConversationPublic, status_code=status.HTTP_201_CREATED)
@@ -39,8 +42,24 @@ async def create_conversation(
     manager.join_conversation(current_user.id, conversation.id)
     for participant_id in conversation_create.participant_ids:
         manager.join_conversation(participant_id, conversation.id)
-    
-    return conversation
+
+    # `Conversation.participants` contient des ConversationParticipant, pas des
+    # User : on construit la réponse explicitement, comme GET /conversations.
+    return ConversationPublic(
+        id=conversation.id,
+        is_group=conversation.is_group,
+        name=conversation.name,
+        participants=[
+            p.user for p in conversation.participants if p.user.id != current_user.id
+        ],
+        last_message=conversation.messages[-1] if conversation.messages else None,
+        unread_count=next(
+            (p.unread_count for p in conversation.participants if p.user_id == current_user.id),
+            0,
+        ),
+        created_at=conversation.created_at,
+        updated_at=conversation.updated_at,
+    )
 
 
 @router.get("/conversations", response_model=List[ConversationPublic])
@@ -140,38 +159,52 @@ async def send_message(
     
     # Translate message if languages differ
     if receiver and receiver.preferred_language != message.original_language:
-        try:
-            # ⬇️ IMPORT DIFFÉRÉ ICI - uniquement quand on envoie un message
-            from app.services.mbart_translator import translation as translation_service
-            
-            translation = await translation_service.translate_text(
-                text=message.content,
-                source_language=message.original_language,
-                target_language=receiver.preferred_language,
-                tone=message.tone
-            )
-            
-            message.translated_content = translation.translated_text
+        from app.services import translation as translation_service
+
+        # translate() ne lève jamais : elle renvoie un résultat portant le texte
+        # d'origine en cas d'échec. Le message part donc dans tous les cas.
+        result = await translation_service.translate(
+            text=message.content,
+            source_language=message.original_language,
+            target_language=receiver.preferred_language,
+            tone=message.tone,
+        )
+
+        if result.success:
+            message.translated_content = result.translated_text
             message.target_language = receiver.preferred_language
             message.translation_status = TranslationStatusEnum.TRANSLATED
-            
-            await db.commit()
-            await db.refresh(message)
-            
-        except Exception as e:
+        else:
+            logger.warning(
+                "Traduction indisponible pour le message %s : %s",
+                message.id,
+                result.error,
+            )
             message.translation_status = TranslationStatusEnum.FAILED
-            await db.commit()
+
+        await db.commit()
+        await db.refresh(message)
     
     # Broadcast message via WebSocket
+    # Même forme que MessagePublic : un client qui sait lire la réponse REST
+    # doit pouvoir lire la diffusion temps réel sans cas particulier. Les
+    # champs de langue et de ton manquaient, ce qui faisait planter l'UI.
     message_data = {
         "id": str(message.id),
         "content": message.content,
+        "original_language": message.original_language.value,
         "translated_content": message.translated_content,
+        "target_language": message.target_language.value if message.target_language else None,
+        "tone": message.tone.value,
+        "status": message.status.value,
+        "translation_status": (
+            message.translation_status.value if message.translation_status else None
+        ),
         "sender_id": str(message.sender_id),
         "receiver_id": str(message.receiver_id),
         "conversation_id": str(message.conversation_id),
-        "status": message.status.value,
-        "created_at": message.created_at.isoformat()
+        "created_at": message.created_at.isoformat(),
+        "read_at": message.read_at.isoformat() if message.read_at else None,
     }
     
     await manager.broadcast_message(

@@ -1,5 +1,5 @@
 from sqlalchemy import Column, String, Boolean, DateTime, Enum as SQLEnum
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Uuid
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 import uuid
@@ -32,7 +32,7 @@ class User(Base):
     __tablename__ = "users"
     
     id = Column(
-        UUID(as_uuid=True),
+        Uuid(as_uuid=True),
         primary_key=True,
         default=uuid.uuid4,
         index=True

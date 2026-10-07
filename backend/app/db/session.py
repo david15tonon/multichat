@@ -3,14 +3,19 @@ from sqlalchemy.orm import declarative_base
 from typing import AsyncGenerator
 from app.core.config import settings
 
+# SQLite n'utilise pas QueuePool : lui passer pool_size/max_overflow lève
+# "TypeError: Invalid argument(s) sent to create_engine()". Ces options ne
+# valent que pour les backends réseau (Postgres, MySQL).
+_engine_options: dict = {"echo": settings.DEBUG}
+if not settings.DATABASE_URL.startswith("sqlite"):
+    _engine_options.update(
+        pool_size=settings.DATABASE_POOL_SIZE,
+        max_overflow=settings.DATABASE_MAX_OVERFLOW,
+        pool_pre_ping=True,
+    )
+
 # Create async engine
-engine = create_async_engine(
-    settings.DATABASE_URL,
-    echo=settings.DEBUG,
-    pool_size=settings.DATABASE_POOL_SIZE,
-    max_overflow=settings.DATABASE_MAX_OVERFLOW,
-    pool_pre_ping=True,
-)
+engine = create_async_engine(settings.DATABASE_URL, **_engine_options)
 
 # Create async session factory
 AsyncSessionLocal = async_sessionmaker(

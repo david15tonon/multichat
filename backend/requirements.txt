@@ -1,22 +1,25 @@
 # API Framework
 fastapi==0.129.0
 uvicorn[standard]
-python-multipart
 
 # Authentification
 python-jose[cryptography]
 passlib[bcrypt]
+# passlib (non maintenu depuis 2020) sonde bcrypt.__about__.__version__,
+# supprimé en bcrypt >= 4.1 -> casse au premier register. Épinglé volontairement.
+bcrypt==4.0.1
 
 # Base de données
-sqlalchemy==2.0.0
-alembic==1.12.0
-asyncpg
+# sqlalchemy desserré : 2.0.0 (janvier 2023) est incompatible Python 3.13+
+sqlalchemy[asyncio]>=2.0.36
+aiosqlite
+# Pour cibler Postgres en production, décommenter :
+# asyncpg
 
-# Hugging Face API (le seul ajout pour la traduction !)
-huggingface_hub
+
 # Utilitaires
-python-dotenv==1.0.0
-httpx==0.28.0
+python-dotenv>=1.0.1
+httpx>=0.28.0
 websockets==16.0
 pydantic==2.12.5
 pydantic-settings==2.13.0

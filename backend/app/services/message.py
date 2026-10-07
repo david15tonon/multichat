@@ -1,6 +1,6 @@
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, and_, or_, desc
+from sqlalchemy import select, and_, or_, desc, func
 from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from uuid import UUID
@@ -49,9 +49,30 @@ class MessageService:
             db.add(participant)
         
         await db.commit()
-        await db.refresh(conversation)
-        
-        return conversation
+
+        # `refresh` ne charge PAS les relations lazy : les participants seraient
+        # accédés après la fermeture de session (DetachedInstanceError) au moment
+        # de sérialiser la réponse. On recharge donc explicitement.
+        return await MessageService.get_conversation_by_id(db, conversation.id)
+
+    @staticmethod
+    async def get_conversation_by_id(
+        db: AsyncSession,
+        conversation_id: UUID,
+    ) -> Optional[Conversation]:
+        """Charge une conversation avec ses participants et leurs utilisateurs."""
+        stmt = (
+            select(Conversation)
+            .where(Conversation.id == conversation_id)
+            .options(
+                selectinload(Conversation.participants).selectinload(
+                    ConversationParticipant.user
+                ),
+                selectinload(Conversation.messages),
+            )
+        )
+        result = await db.execute(stmt)
+        return result.scalars().first()
     
     @staticmethod
     async def get_conversation_between_users(
@@ -61,21 +82,32 @@ class MessageService:
     ) -> Optional[Conversation]:
         """Find existing 1-on-1 conversation between two users"""
         # Find conversations where both users are participants
+        # On garde les conversations non-groupe dont les DEUX utilisateurs sont
+        # participants : on filtre sur les deux identifiants puis on ne conserve
+        # que les groupes en comptant exactement 2 participants distincts.
+        # (count() ne s'applique pas à un select() en SQLAlchemy 2.x : il faut
+        # l'agrégat func.count(), sans quoi l'appel lève AttributeError.)
         stmt = (
             select(Conversation)
             .join(ConversationParticipant)
             .where(
                 and_(
-                    Conversation.is_group == False,
-                    ConversationParticipant.user_id.in_([user1_id, user2_id])
+                    Conversation.is_group.is_(False),
+                    ConversationParticipant.user_id.in_([user1_id, user2_id]),
                 )
             )
             .group_by(Conversation.id)
-            .having(select(ConversationParticipant.user_id).count() == 2)
+            .having(func.count(func.distinct(ConversationParticipant.user_id)) == 2)
+            .options(
+                selectinload(Conversation.participants).selectinload(
+                    ConversationParticipant.user
+                ),
+                selectinload(Conversation.messages),
+            )
         )
-        
+
         result = await db.execute(stmt)
-        return result.scalar_one_or_none()
+        return result.scalars().first()
     
     @staticmethod
     async def send_message(

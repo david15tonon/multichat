@@ -5,7 +5,7 @@ from app.db.session import get_db
 from app.schemas.user import UserUpdate, UserSettings, UserInDB
 from app.schemas.message import TranslationRequest, TranslationResponse
 from app.services.auth import auth_service
-from app.services.mbart_translator import translation as translation_service
+from app.services import translation as translation_service
 from app.core.dependencies import get_current_user
 from app.models.user import User
 
@@ -61,8 +61,7 @@ async def translate_text(
     
     Returns translated text with confidence score.
     """
-    translation = await translation_service.translate_request(translation_request)
-    return translation
+    return await translation_service.translate_request(translation_request)
 
 
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)

@@ -1,11 +1,9 @@
-# Core module
-from app.core.config import settings
-from app.core.security import security
-from app.core.dependencies import get_current_user, get_current_active_user
+"""Paquet `core` : configuration, sécurité et dépendances FastAPI.
 
-__all__ = [
-    "settings",
-    "security",
-    "get_current_user",
-    "get_current_active_user",
-]
+Volontairement vide de ré-exports. Importer ici `app.core.dependencies`
+créait un cycle : `app.db.session` importe `app.core.config`, ce qui exécute
+ce fichier, qui importe `dependencies`, qui réimporte `app.db.session` encore
+partiellement initialisé. Chaque module importe donc son sous-module
+directement (`from app.core.config import settings`), ce que fait déjà tout
+le code existant.
+"""

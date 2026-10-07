@@ -44,3 +44,18 @@ coverage
 .cache
 .temp
 *.tsbuildinfo
+
+# Suivi local (jamais commité)
+tasks/
+
+# tasks/ -> lien symbolique vers le coffre central (jamais commité)
+tasks
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Base SQLite locale
+*.db
