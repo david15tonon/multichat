@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useThemeMode } from '../../contexts/ThemeContext';
+import { useT } from '../../i18n/I18nContext';
 import { Icon } from '../atoms/Icon';
 import { Avatar } from '../atoms/Avatar';
 
@@ -141,6 +142,7 @@ export const Header: React.FC<HeaderProps> = ({
   backgroundColor,
 }) => {
   const { resolved, toggle } = useThemeMode();
+  const t = useT();
   return (
     <HeaderContainer $backgroundColor={backgroundColor}>
       <LeftSection>
@@ -157,7 +159,7 @@ export const Header: React.FC<HeaderProps> = ({
           {(subtitle || isOnline !== undefined) && (
             <Subtitle>
               {isOnline !== undefined && (
-                <OnlineIndicator>{isOnline ? 'EN LIGNE' : 'HORS LIGNE'}</OnlineIndicator>
+                <OnlineIndicator>{isOnline ? t('chat.online') : t('chat.offline')}</OnlineIndicator>
               )}
               {subtitle}
             </Subtitle>
@@ -168,7 +170,7 @@ export const Header: React.FC<HeaderProps> = ({
       <RightSection>
         {isOnline !== undefined && (
           <ConnectionBadge $isOnline={isConnected ?? false}>
-            {isConnected ? 'CONNECTÉ' : 'HORS CONNEXION'}
+            {isConnected ? t('chat.connected') : t('chat.disconnected')}
           </ConnectionBadge>
         )}
 
@@ -177,8 +179,8 @@ export const Header: React.FC<HeaderProps> = ({
         {showThemeToggle && (
           <IconButton
             onClick={onThemeToggle ?? toggle}
-            aria-label={resolved === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre'}
-            title={resolved === 'dark' ? 'Mode clair' : 'Mode sombre'}
+            aria-label={resolved === 'dark' ? t('theme.toLight') : t('theme.toDark')}
+            title={resolved === 'dark' ? t('theme.toLight') : t('theme.toDark')}
           >
             <Icon name={resolved === 'dark' ? 'sun' : 'moon'} size={24} />
           </IconButton>

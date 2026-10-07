@@ -4,6 +4,7 @@ import { ThemeProvider } from 'styled-components';
 import { describe, expect, it } from 'vitest';
 import { MessageBubble } from './MessageBubble';
 import { theme } from '../../styles/theme';
+import { I18nProvider } from '../../i18n/I18nContext';
 import type { Message } from '../../types';
 
 const message: Message = {
@@ -23,7 +24,9 @@ const message: Message = {
 const show = (props: Partial<Parameters<typeof MessageBubble>[0]> = {}) =>
   render(
     <ThemeProvider theme={theme}>
-      <MessageBubble message={message} isOwn={false} senderName="Elena" {...props} />
+      <I18nProvider locale="fr">
+        <MessageBubble message={message} isOwn={false} senderName="Elena" {...props} />
+      </I18nProvider>
     </ThemeProvider>,
   );
 
@@ -70,7 +73,9 @@ describe('MessageBubble — priorité des langues', () => {
     const brut: Message = { ...message, translatedContent: undefined, translationStatus: 'failed' };
     render(
       <ThemeProvider theme={theme}>
-        <MessageBubble message={brut} isOwn={false} senderName="Elena" />
+        <I18nProvider locale="fr">
+          <MessageBubble message={brut} isOwn={false} senderName="Elena" />
+        </I18nProvider>
       </ThemeProvider>,
     );
 

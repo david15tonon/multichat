@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useThemeMode } from '../contexts/ThemeContext';
+import { useT } from '../i18n/I18nContext';
 import { Logo, Button, Input, Icon } from '../components/atoms';
 
 export interface ForgotPasswordPageProps {
@@ -185,6 +186,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
   success,
 }) => {
   const { resolved, toggle: toggleTheme } = useThemeMode();
+  const t = useT();
   const isDark = resolved === 'dark';
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
@@ -201,7 +203,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
         <ThemeToggle
             type="button"
             onClick={toggleTheme}
-            aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+            aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
           >
             <Icon name={isDark ? 'sun' : 'moon'} size={24} />
         </ThemeToggle>
@@ -216,7 +218,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
             <ResetIcon>
               <Icon name="check" size={32} />
             </ResetIcon>
-            <Title>Email envoyé !</Title>
+            <Title>{t('forgot.sent')}</Title>
             <Description>
               Nous avons envoyé un lien de réinitialisation à :
             </Description>
@@ -240,7 +242,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
       <ThemeToggle
           type="button"
           onClick={toggleTheme}
-          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+          aria-label={isDark ? t('theme.toLight') : t('theme.toDark')}
         >
           <Icon name={isDark ? 'sun' : 'moon'} size={24} />
       </ThemeToggle>
@@ -251,7 +253,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
           <Logo size="large" />
         </LogoSection>
 
-        <Title>Mot de passe oublié ?</Title>
+        <Title>{t('forgot.title')}</Title>
         <Description>
           Pas de panique ! Entrez votre email et nous vous enverrons
           un lien pour réinitialiser votre mot de passe.
@@ -274,7 +276,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
         <Form onSubmit={handleSubmit}>
           <Input
             type="email"
-            placeholder="Votre adresse email"
+            placeholder={t('login.email')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             fullWidth

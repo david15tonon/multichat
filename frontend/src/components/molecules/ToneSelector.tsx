@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useT, type Translate } from '../../i18n/I18nContext';
 import { MessageTone } from '../../types';
 import { Icon } from '../atoms/Icon';
 
@@ -9,32 +10,33 @@ export interface ToneSelectorProps {
   variant?: 'full' | 'compact';
 }
 
-const tones: Array<{
+/** Construit la liste des tons dans la langue de l'interface. */
+const buildTones = (t: Translate): Array<{
   value: MessageTone;
   label: string;
   description: string;
   example: string;
   icon: 'smile' | 'user' | 'briefcase';
-}> = [
+}> => [
   {
     value: 'casual',
-    label: 'Décontracté',
-    description: 'Entre amis, ton détendu',
-    example: '"Salut ! Ça va ?"',
+    label: t('tone.casual'),
+    description: t('tone.casual.description'),
+    example: t('tone.casual.example'),
     icon: 'smile',
   },
   {
     value: 'standard',
-    label: 'Standard',
-    description: 'Poli sans être guindé',
-    example: '"Bonjour, comment allez-vous ?"',
+    label: t('tone.standard'),
+    description: t('tone.standard.description'),
+    example: t('tone.standard.example'),
     icon: 'user',
   },
   {
     value: 'formal',
-    label: 'Soutenu',
-    description: 'Registre professionnel',
-    example: '"Je vous prie d\'agréer mes salutations."',
+    label: t('tone.formal'),
+    description: t('tone.formal.description'),
+    example: t('tone.formal.example'),
     icon: 'briefcase',
   },
 ];
@@ -172,17 +174,19 @@ export const ToneSelector: React.FC<ToneSelectorProps> = ({
   onChange,
   variant = 'full',
 }) => {
+  const t = useT();
+  const tones = buildTones(t);
   if (variant === 'compact') {
     return (
       <CompactContainer>
         <CompactButton $selected={selected === 'casual'} onClick={() => onChange('casual')}>
-          Casual
+          {t('tone.casual')}
         </CompactButton>
         <CompactButton $selected={selected === 'standard'} onClick={() => onChange('standard')}>
           STD
         </CompactButton>
         <CompactButton $selected={selected === 'formal'} onClick={() => onChange('formal')}>
-          Formal
+          {t('tone.formal')}
         </CompactButton>
       </CompactContainer>
     );
