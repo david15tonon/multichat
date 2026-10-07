@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useT } from '../../i18n/I18nContext';
 import { Message } from '../../types';
 import { Avatar } from '../atoms/Avatar';
 import { Icon } from '../atoms/Icon';
@@ -160,6 +161,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   senderAvatar,
   showTranslation = true,
 }) => {
+  const t = useT();
   const [showTranslatedText, setShowTranslatedText] = useState(showTranslation);
 
   const hasTranslation = Boolean(
@@ -174,8 +176,8 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
   const secondaryText = !isOwn && hasTranslation ? message.content : message.translatedContent;
 
   const secondaryLabel = isOwn
-    ? `TRADUIT VERS ${(message.targetLanguage ?? '').toUpperCase()}`.trim()
-    : `ORIGINAL EN ${message.originalLanguage.toUpperCase()}`;
+    ? t('bubble.translatedTo', { language: (message.targetLanguage ?? '').toUpperCase() })
+    : t('bubble.originalIn', { language: message.originalLanguage.toUpperCase() });
 
   return (
     <Container $isOwn={isOwn}>
@@ -192,11 +194,11 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
                 type="button"
                 onClick={() => setShowTranslatedText((shown) => !shown)}
                 aria-expanded={showTranslatedText}
-                title={showTranslatedText ? 'Masquer l’original' : 'Afficher l’original'}
+                title={showTranslatedText ? t('bubble.hideOriginal') : t('bubble.showOriginal')}
               >
                 <Icon name="translate" size={12} />
                 {message.translationStatus === 'translating'
-                  ? 'Traduction en cours...'
+                  ? t('bubble.translating')
                   : secondaryLabel}
               </TranslationToggle>
               {showTranslatedText && <TranslatedText>{secondaryText}</TranslatedText>}
@@ -206,7 +208,7 @@ export const MessageBubble: React.FC<MessageBubbleProps> = ({
           {message.translationStatus === 'failed' && (
             <ErrorBanner>
               <Icon name="alert" size={12} />
-              TRADUCTION INDISPONIBLE
+              {t('bubble.failed')}
             </ErrorBanner>
           )}
         </BubbleWrapper>

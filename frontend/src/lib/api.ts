@@ -11,7 +11,11 @@
 
 import type { ApiError, Language, MessageTone } from '../types';
 
-const RAW_BASE = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000';
+// En développement on vise le backend local ; en production, VITE_API_URL doit
+// être défini. À défaut, on retombe sur la même origine, ce qui fonctionne si
+// le backend est servi derrière le même domaine via une rewrite.
+const RAW_BASE =
+  import.meta.env.VITE_API_URL ?? (import.meta.env.PROD ? '' : 'http://127.0.0.1:8000');
 export const API_BASE = RAW_BASE.replace(/\/$/, '');
 
 // ---------------------------------------------------------------- types API

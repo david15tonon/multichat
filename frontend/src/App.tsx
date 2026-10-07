@@ -12,6 +12,8 @@ import { GlobalStyles } from './styles/GlobalStyles';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ChatProvider, useChatSession } from './contexts/ChatContext';
+import { LightOnly } from './contexts/LightOnly';
+import { AuthI18nProvider, useT } from './i18n/I18nContext';
 import { CallOverlay } from './components/organisms';
 import {
   ChatPage,
@@ -36,7 +38,8 @@ function RequireAuth({ children }: { children: RouteProps['element'] }) {
 function RedirectIfAuthenticated({ children }: { children: RouteProps['element'] }) {
   const { isAuthenticated, isLoading } = useAuth();
   if (isLoading) return null;
-  return isAuthenticated ? <Navigate to="/conversations" replace /> : <>{children}</>;
+  if (isAuthenticated) return <Navigate to="/conversations" replace />;
+  return <LightOnly>{children}</LightOnly>;
 }
 
 function LoginRoute() {
@@ -88,6 +91,7 @@ function SignupRoute() {
 
 function ForgotPasswordRoute() {
   const navigate = useNavigate();
+  const t = useT();
 
   // Le backend n'expose pas encore de route de réinitialisation : on l'assume
   // explicitement plutôt que de simuler un succès trompeur.
@@ -95,7 +99,7 @@ function ForgotPasswordRoute() {
     <ForgotPasswordPage
       onResetRequest={() => undefined}
       onBackToLogin={() => navigate('/login')}
-      error="La réinitialisation par e-mail n'est pas encore disponible."
+      error={t('forgot.unavailable')}
     />
   );
 }
@@ -125,6 +129,7 @@ function ConversationsRoute() {
 function ChatRoute() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const t = useT();
   const { conversationId } = useParams<{ conversationId: string }>();
   const chat = useChatSession();
   const call = chat.call;
@@ -135,7 +140,7 @@ function ChatRoute() {
     if (conversationId) chat.selectConversation(conversationId);
   }, [conversationId, chat.selectConversation]);
 
-  const peerName = chat.contact?.full_name ?? 'Conversation';
+  const peerName = chat.contact?.full_name ?? t('chat.conversation');
 
   return (
     <ChatPage
@@ -193,6 +198,7 @@ function SettingsRoute() {
  */
 function GlobalCall() {
   const chat = useChatSession();
+  const t = useT();
   const call = chat.call;
 
   const peer = chat.conversations
@@ -202,7 +208,7 @@ function GlobalCall() {
   return (
     <CallOverlay
       callState={call.callState}
-      peerName={peer?.full_name ?? 'Correspondant'}
+      peerName={peer?.full_name ?? t('call.peer')}
       peerAvatar={peer?.avatar_url ?? undefined}
       localStream={call.localStream}
       remoteStream={call.remoteStream}
@@ -235,7 +241,7 @@ function AppRoutes() {
         path="/signup"
         element={<RedirectIfAuthenticated><SignupRoute /></RedirectIfAuthenticated>}
       />
-      <Route path="/forgot-password" element={<ForgotPasswordRoute />} />
+      <Route path="/forgot-password" element={<LightOnly><ForgotPasswordRoute /></LightOnly>} />
       <Route
         path="/conversations"
         element={<RequireAuth><ConversationsRoute /></RequireAuth>}
@@ -257,10 +263,12 @@ export default function App() {
       <GlobalStyles />
       <BrowserRouter>
         <AuthProvider>
-          <ChatProvider>
-            <AppRoutes />
-            <GlobalCall />
-          </ChatProvider>
+          <AuthI18nProvider>
+            <ChatProvider>
+              <AppRoutes />
+              <GlobalCall />
+            </ChatProvider>
+          </AuthI18nProvider>
         </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>

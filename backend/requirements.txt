@@ -13,8 +13,11 @@ bcrypt==4.0.1
 # sqlalchemy desserré : 2.0.0 (janvier 2023) est incompatible Python 3.13+
 sqlalchemy[asyncio]>=2.0.36
 aiosqlite
-# Pour cibler Postgres en production, décommenter :
-# asyncpg
+# Postgres en production (Neon) ; SQLite reste le défaut en local
+asyncpg
+
+# Relais de diffusion WebSocket entre instances
+redis>=5.0
 
 
 # Utilitaires

@@ -17,6 +17,8 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    sourcemap: true,
+    // Les sourcemaps publient l'intégralité du code source aux visiteurs :
+    // utile en développement, à proscrire sur un site public.
+    sourcemap: process.env.NODE_ENV !== 'production',
   },
 });

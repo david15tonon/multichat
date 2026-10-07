@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from app.core.config import settings
 from app.api import api_router
 from app.db.session import init_db, close_db, reset_presence
+from app.websocket.manager import manager
 
 
 @asynccontextmanager
@@ -18,16 +19,23 @@ async def lifespan(app: FastAPI):
     await init_db()
     print("✅ Database initialized")
 
-    # `is_online` est positionné à la connexion et à la déconnexion WebSocket.
-    # Un arrêt brutal laisse donc des utilisateurs marqués en ligne alors que
-    # plus aucune session n'existe : au démarrage, personne n'est connecté.
-    await reset_presence()
-    print("✅ Présence réinitialisée")
+    await manager.startup()
+    print(f"✅ Diffusion : {'Redis' if manager.distributed else 'mémoire (mono-instance)'}")
+
+    # En mono-instance, un arrêt brutal laisse des comptes marqués en ligne :
+    # au démarrage, plus personne n'est connecté, on remet tout à zéro.
+    # En multi-instance (Redis), surtout pas : chaque démarrage à froid
+    # déconnecterait tous les utilisateurs des autres instances. La présence
+    # y vit dans Redis et se purge seule par expiration.
+    if not manager.distributed:
+        await reset_presence()
+        print("✅ Présence réinitialisée")
     
     yield
     
     # Shutdown
     print("👋 Shutting down MultiChat API...")
+    await manager.shutdown()
     await close_db()
     print("✅ Database connections closed")
 
@@ -114,12 +122,17 @@ async def kaith_heathcheck():
 # Health check endpoint
 @app.get("/health", tags=["Health"])
 async def health_check():
-    """
-    Health check endpoint for monitoring
+    """État du service.
+
+    `realtime` indique le mode de diffusion. En « memory », les messages
+    temps réel ne franchissent pas la frontière d'une instance : c'est
+    acceptable sur un serveur unique, pas en serverless. Le surveiller évite
+    de découvrir la bascule silencieuse en production.
     """
     return {
         "status": "healthy",
-        "version": settings.APP_VERSION
+        "version": settings.APP_VERSION,
+        "realtime": "redis" if manager.distributed else "memory",
     }
 
 

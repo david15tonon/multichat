@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useThemeMode } from '../contexts/ThemeContext';
+import { useT } from '../i18n/I18nContext';
 import { Logo, Button, Input, Icon, VisuallyHidden } from '../components/atoms';
 
 export interface LoginPageProps {
@@ -19,27 +19,6 @@ const Container = styled.div`
   background-color: ${({ theme }) => theme.colors.primary.yellow};
   color: ${({ theme }) => theme.colors.neutral.onBright};
   padding: ${({ theme }) => theme.spacing.xl};
-`;
-
-const ThemeToggle = styled.button`
-  position: absolute;
-  top: ${({ theme }) => theme.spacing.lg};
-  right: ${({ theme }) => theme.spacing.lg};
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${({ theme }) => theme.colors.neutral.white};
-  border: 3px solid ${({ theme }) => theme.colors.neutral.black};
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 ${({ theme }) => theme.colors.neutral.black};
-
-  &:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 ${({ theme }) => theme.colors.neutral.black};
-  }
 `;
 
 const Content = styled.div`
@@ -199,8 +178,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   isLoading = false,
   error,
 }) => {
-  const { resolved, toggle: toggleTheme } = useThemeMode();
-  const isDark = resolved === 'dark';
+  const t = useT();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -211,13 +189,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
   return (
     <Container>
-      <ThemeToggle
-          type="button"
-          onClick={toggleTheme}
-          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
-        >
-          <Icon name={isDark ? 'sun' : 'moon'} size={24} />
-      </ThemeToggle>
 
       <Content>
         <LogoSection>
@@ -237,7 +208,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         <Form onSubmit={handleSubmit}>
           <Input
             type="email"
-            placeholder="Email"
+            placeholder={t('login.email')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             fullWidth
@@ -246,7 +217,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
           <Input
             type="password"
-            placeholder="Mot de passe"
+            placeholder={t('login.password')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             fullWidth
@@ -254,47 +225,47 @@ export const LoginPage: React.FC<LoginPageProps> = ({
           />
 
           <Button type="submit" variant="primary" fullWidth loading={isLoading}>
-            Connexion →
+            {t('login.submit')}
           </Button>
         </Form>
 
         <Divider>
-          <span>OU</span>
+          <span>{t('common.or')}</span>
         </Divider>
 
         <SocialButtons>
           <Button
             variant="social"
             disabled
-            title="Connexion sociale bientôt disponible"
+            title={t('login.socialSoon')}
             onClick={() => onSocialLogin('google')}
             icon={<Icon name="google" size={20} />}
           >
-            <VisuallyHidden>Se connecter avec Google</VisuallyHidden>
+            <VisuallyHidden>{t('login.withGoogle')}</VisuallyHidden>
           </Button>
           <Button
             variant="social"
             disabled
-            title="Connexion sociale bientôt disponible"
+            title={t('login.socialSoon')}
             onClick={() => onSocialLogin('apple')}
             icon={<Icon name="apple" size={20} />}
           >
-            <VisuallyHidden>Se connecter avec Apple</VisuallyHidden>
+            <VisuallyHidden>{t('login.withApple')}</VisuallyHidden>
           </Button>
           <Button
             variant="social"
             disabled
-            title="Connexion sociale bientôt disponible"
+            title={t('login.socialSoon')}
             onClick={() => onSocialLogin('twitter')}
             icon={<Icon name="x" size={20} />}
           >
-            <VisuallyHidden>Se connecter avec X</VisuallyHidden>
+            <VisuallyHidden>{t('login.withX')}</VisuallyHidden>
           </Button>
         </SocialButtons>
 
         <LinksSection>
-          <Link onClick={onForgotPassword}>Mot de passe oublié ?</Link>
-          <Link onClick={onSignup}>S'inscrire</Link>
+          <Link onClick={onForgotPassword}>{t('login.forgot')}</Link>
+          <Link onClick={onSignup}>{t('login.signup')}</Link>
         </LinksSection>
       </Content>
     </Container>

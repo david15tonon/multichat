@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useThemeMode } from '../contexts/ThemeContext';
+import { useT } from '../i18n/I18nContext';
 import { Logo, Button, Input, Icon, VisuallyHidden } from '../components/atoms';
 import { LanguagePicker } from '../components/molecules/LanguagePicker';
 import type { Language } from '../types';
@@ -22,27 +22,6 @@ const Container = styled.div`
   background-color: ${({ theme }) => theme.colors.primary.orange};
   color: ${({ theme }) => theme.colors.neutral.onBright};
   padding: ${({ theme }) => theme.spacing.xl};
-`;
-
-const ThemeToggle = styled.button`
-  position: absolute;
-  top: ${({ theme }) => theme.spacing.lg};
-  right: ${({ theme }) => theme.spacing.lg};
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${({ theme }) => theme.colors.neutral.white};
-  border: 3px solid ${({ theme }) => theme.colors.neutral.black};
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 ${({ theme }) => theme.colors.neutral.black};
-
-  &:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 ${({ theme }) => theme.colors.neutral.black};
-  }
 `;
 
 const Content = styled.div`
@@ -232,8 +211,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
   isLoading = false,
   error,
 }) => {
-  const { resolved, toggle: toggleTheme } = useThemeMode();
-  const isDark = resolved === 'dark';
+  const t = useT();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -268,18 +246,11 @@ export const SignupPage: React.FC<SignupPageProps> = ({
 
   return (
     <Container>
-      <ThemeToggle
-          type="button"
-          onClick={toggleTheme}
-          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
-        >
-          <Icon name={isDark ? 'sun' : 'moon'} size={24} />
-      </ThemeToggle>
 
       <Content>
         <LogoSection>
           <Illustration>
-            <WelcomeBadge>BIENVENUE !</WelcomeBadge>
+            <WelcomeBadge>{t('login.welcome')}</WelcomeBadge>
           </Illustration>
           <Logo size="large" />
         </LogoSection>
@@ -294,7 +265,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
         <Form onSubmit={handleSubmit}>
           <Input
             type="text"
-            placeholder="Nom complet"
+            placeholder={t('signup.name')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             fullWidth
@@ -303,7 +274,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
 
           <Input
             type="email"
-            placeholder="Email"
+            placeholder={t('login.email')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             fullWidth
@@ -312,7 +283,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
 
           <Input
             type="password"
-            placeholder="Mot de passe"
+            placeholder={t('login.password')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             fullWidth
@@ -321,7 +292,7 @@ export const SignupPage: React.FC<SignupPageProps> = ({
 
           <Input
             type="password"
-            placeholder="Confirmer le mot de passe"
+            placeholder={t('signup.confirmPassword')}
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             fullWidth
@@ -331,29 +302,29 @@ export const SignupPage: React.FC<SignupPageProps> = ({
           <LanguagePicker
             selected={language}
             onChange={setLanguage}
-            label="Votre langue — vous recevrez les messages traduits dedans"
+            label={t('signup.languageLabel')}
           />
 
           <PasswordRequirements>
             <RequirementItem $met={passwordChecks.length}>
               <Icon name={passwordChecks.length ? 'check' : 'x'} size={12} />
-              Au moins 8 caractères
+              {t('signup.req.length')}
             </RequirementItem>
             <RequirementItem $met={passwordChecks.uppercase}>
               <Icon name={passwordChecks.uppercase ? 'check' : 'x'} size={12} />
-              Une lettre majuscule
+              {t('signup.req.uppercase')}
             </RequirementItem>
             <RequirementItem $met={passwordChecks.lowercase}>
               <Icon name={passwordChecks.lowercase ? 'check' : 'x'} size={12} />
-              Une lettre minuscule
+              {t('signup.req.lowercase')}
             </RequirementItem>
             <RequirementItem $met={passwordChecks.number}>
               <Icon name={passwordChecks.number ? 'check' : 'x'} size={12} />
-              Un chiffre
+              {t('signup.req.number')}
             </RequirementItem>
             <RequirementItem $met={passwordChecks.match}>
               <Icon name={passwordChecks.match ? 'check' : 'x'} size={12} />
-              Les mots de passe correspondent
+              {t('signup.req.match')}
             </RequirementItem>
           </PasswordRequirements>
 
@@ -369,48 +340,48 @@ export const SignupPage: React.FC<SignupPageProps> = ({
         </Form>
 
         <Divider>
-          <span>OU</span>
+          <span>{t('common.or')}</span>
         </Divider>
 
         <SocialButtons>
           <Button
             variant="social"
             disabled
-            title="Connexion sociale bientôt disponible"
+            title={t('login.socialSoon')}
             onClick={() => onSocialSignup('google')}
             icon={<Icon name="google" size={20} />}
           >
-            <VisuallyHidden>S'inscrire avec Google</VisuallyHidden>
+            <VisuallyHidden>{t('signup.withGoogle')}</VisuallyHidden>
           </Button>
           <Button
             variant="social"
             disabled
-            title="Connexion sociale bientôt disponible"
+            title={t('login.socialSoon')}
             onClick={() => onSocialSignup('apple')}
             icon={<Icon name="apple" size={20} />}
           >
-            <VisuallyHidden>S'inscrire avec Apple</VisuallyHidden>
+            <VisuallyHidden>{t('signup.withApple')}</VisuallyHidden>
           </Button>
           <Button
             variant="social"
             disabled
-            title="Connexion sociale bientôt disponible"
+            title={t('login.socialSoon')}
             onClick={() => onSocialSignup('twitter')}
             icon={<Icon name="x" size={20} />}
           >
-            <VisuallyHidden>S'inscrire avec X</VisuallyHidden>
+            <VisuallyHidden>{t('signup.withX')}</VisuallyHidden>
           </Button>
         </SocialButtons>
 
         <TermsSection>
           <div>
-            En vous inscrivant, vous acceptez nos{' '}
-            <TermsLink onClick={onTermsClick}>conditions d'utilisation</TermsLink>
-            {' '}et notre{' '}
-            <TermsLink onClick={onPrivacyClick}>politique de confidentialité</TermsLink>
+            {t('signup.termsIntro')}{' '}
+            <TermsLink onClick={onTermsClick}>{t('signup.terms')}</TermsLink>
+            {' '}{t('signup.and')}{' '}
+            <TermsLink onClick={onPrivacyClick}>{t('signup.privacy')}</TermsLink>
           </div>
           <LoginLink onClick={onLoginClick}>
-            Déjà un compte ? Connectez-vous
+            {t('signup.alreadyMember')}
           </LoginLink>
         </TermsSection>
       </Content>

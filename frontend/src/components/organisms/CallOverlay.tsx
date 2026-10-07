@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { useT, type Translate } from '../../i18n/I18nContext';
 import { Avatar, Button, Icon } from '../atoms';
 import type { CallState } from '../../hooks/useWebRTC';
 
@@ -76,13 +77,13 @@ const ErrorText = styled.p`
   max-width: 420px;
 `;
 
-const STATUS_LABEL: Record<CallState, string> = {
+const statusLabel = (t: Translate): Record<CallState, string> => ({
   idle: '',
-  calling: 'Appel en cours…',
-  ringing: 'Appel entrant',
-  connected: 'En communication',
-  unavailable: 'Indisponible',
-};
+  calling: t('call.calling'),
+  ringing: t('call.ringing'),
+  connected: t('call.connected'),
+  unavailable: t('call.unavailable'),
+});
 
 /** Branche un MediaStream sur un <video> sans passer par le DOM à la main. */
 function useStream(stream: MediaStream | null) {
@@ -108,6 +109,8 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   onToggleMute,
   onToggleCamera,
 }) => {
+  const t = useT();
+  const STATUS_LABEL = statusLabel(t);
   const remoteRef = useStream(remoteStream);
   const localRef = useStream(localStream);
 
@@ -116,7 +119,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   const isIncoming = callState === 'ringing';
 
   return (
-    <Backdrop role="dialog" aria-modal="true" aria-label={`Appel avec ${peerName}`}>
+    <Backdrop role="dialog" aria-modal="true" aria-label={t('call.withPeer', { name: peerName })}>
       {remoteStream ? (
         <RemoteVideo ref={remoteRef} autoPlay playsInline />
       ) : (
@@ -141,26 +144,26 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         {isIncoming ? (
           <>
             <Button variant="primary" onClick={onAccept} icon={<Icon name="video" size={20} />}>
-              Accepter
+              {t('call.accept')}
             </Button>
             <Button variant="secondary" onClick={onReject} icon={<Icon name="x" size={20} />}>
-              Refuser
+              {t('call.reject')}
             </Button>
           </>
         ) : (
           <>
             <Button variant="outline" onClick={onToggleMute} icon={<Icon name="phone" size={20} />}>
-              {isMuted ? 'Réactiver le micro' : 'Couper le micro'}
+              {isMuted ? t('call.unmute') : t('call.mute')}
             </Button>
             <Button
               variant="outline"
               onClick={onToggleCamera}
               icon={<Icon name="video" size={20} />}
             >
-              {isCameraOff ? 'Activer la caméra' : 'Couper la caméra'}
+              {isCameraOff ? t('call.cameraOn') : t('call.cameraOff')}
             </Button>
             <Button variant="secondary" onClick={onHangUp} icon={<Icon name="x" size={20} />}>
-              Raccrocher
+              {t('call.hangUp')}
             </Button>
           </>
         )}

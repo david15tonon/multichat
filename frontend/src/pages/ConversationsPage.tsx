@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import styled from 'styled-components';
+import { useT } from '../i18n/I18nContext';
 import { Avatar, Badge, Button, Icon, Input } from '../components/atoms';
 import { Header } from '../components/organisms/Header';
 import type { ConversationPublic, UserPublic } from '../lib/api';
@@ -136,6 +137,7 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
   onStartConversation,
   onSettingsClick,
 }) => {
+  const t = useT();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<UserPublic[]>([]);
   const [searching, setSearching] = useState(false);
@@ -159,7 +161,7 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
         setResults(await onSearchUsers(term));
         setSearchError(null);
       } catch (cause) {
-        setSearchError(cause instanceof Error ? cause.message : 'Recherche impossible');
+        setSearchError(cause instanceof Error ? cause.message : t('conversations.searchFailed'));
         setResults([]);
       } finally {
         setSearching(false);
@@ -190,7 +192,7 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
           avatar: other?.avatar_url ?? undefined,
           isOnline: other ? (onlineUsers?.has(other.id) ?? other.is_online) : false,
           unread: conversation.unread_count,
-          preview: conversation.last_message?.content ?? 'Aucun message pour l’instant',
+          preview: conversation.last_message?.content ?? t('conversations.noMessageYet'),
         };
       }),
     [conversations, currentUserId, onlineUsers],
@@ -199,7 +201,7 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
   return (
     <Container>
       <Header
-        title="CONVERSATIONS"
+        title={t('conversations.title')}
         showSettingsButton
         onSettingsClick={onSettingsClick}
       />
@@ -209,8 +211,8 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
 
         <SearchZone>
           <Input
-            label="Démarrer une conversation"
-            placeholder="Rechercher par nom ou e-mail…"
+            label={t('conversations.start')}
+            placeholder={t('conversations.searchPlaceholder')}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             icon={<Icon name="search" size={18} />}
@@ -222,7 +224,7 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
           {query.trim().length >= 2 && (
             <>
               <SectionTitle>
-                {searching ? 'Recherche…' : `${results.length} résultat(s)`}
+                {searching ? t('conversations.searching') : t('conversations.results', { count: results.length })}
               </SectionTitle>
               <List>
                 {results.map((user) => (
@@ -236,10 +238,10 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
                     />
                     <RowText>
                       <Name>{user.full_name}</Name>
-                      <Preview>Parle {user.preferred_language.toUpperCase()}</Preview>
+                      <Preview>{t('conversations.speaks', { language: user.preferred_language.toUpperCase() })}</Preview>
                     </RowText>
                     <Button variant="outline" size="small" onClick={() => void start(user.id)}>
-                      Écrire
+                      {t('conversations.write')}
                     </Button>
                   </Row>
                 ))}
@@ -248,18 +250,15 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
           )}
         </SearchZone>
 
-        <SectionTitle>Vos conversations</SectionTitle>
+        <SectionTitle>{t('conversations.yours')}</SectionTitle>
 
-        {isLoading && <EmptyState>Chargement…</EmptyState>}
+        {isLoading && <EmptyState>{t('common.loading')}</EmptyState>}
 
         {!isLoading && named.length === 0 && (
           <EmptyState>
             <Icon name="chat" size={48} />
-            <EmptyTitle>Aucune conversation</EmptyTitle>
-            <p>
-              Cherchez quelqu’un par son nom ou son e-mail ci-dessus pour démarrer
-              votre première discussion.
-            </p>
+            <EmptyTitle>{t('conversations.emptyTitle')}</EmptyTitle>
+            <p>{t('conversations.emptyHint')}</p>
           </EmptyState>
         )}
 

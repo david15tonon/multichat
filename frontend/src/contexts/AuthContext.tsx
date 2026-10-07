@@ -38,6 +38,11 @@ interface AuthContextValue {
   clearError: () => void;
 }
 
+// Le contexte d'authentification est monté AVANT I18nProvider (qui dépend de
+// l'utilisateur) : il ne peut donc pas appeler useT(). Les rares messages
+// produits ici restent en anglais, langue de repli de l'interface.
+const FALLBACK_ERROR = 'Sign-in failed';
+
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -78,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (cause) {
         tokenStore.clear();
         setUser(null);
-        const message = cause instanceof Error ? cause.message : 'Échec de la connexion';
+        const message = cause instanceof Error ? cause.message : FALLBACK_ERROR;
         setError(message);
         throw cause;
       }

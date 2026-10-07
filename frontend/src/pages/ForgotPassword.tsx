@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useThemeMode } from '../contexts/ThemeContext';
+import { useT } from '../i18n/I18nContext';
 import { Logo, Button, Input, Icon } from '../components/atoms';
 
 export interface ForgotPasswordPageProps {
@@ -17,27 +17,6 @@ const Container = styled.div`
   flex-direction: column;
   background-color: ${({ theme }) => theme.colors.primary.purple};
   padding: ${({ theme }) => theme.spacing.xl};
-`;
-
-const ThemeToggle = styled.button`
-  position: absolute;
-  top: ${({ theme }) => theme.spacing.lg};
-  right: ${({ theme }) => theme.spacing.lg};
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: ${({ theme }) => theme.colors.neutral.white};
-  border: 3px solid ${({ theme }) => theme.colors.neutral.black};
-  border-radius: 50%;
-  cursor: pointer;
-  box-shadow: 3px 3px 0 ${({ theme }) => theme.colors.neutral.black};
-
-  &:hover {
-    transform: translate(-2px, -2px);
-    box-shadow: 5px 5px 0 ${({ theme }) => theme.colors.neutral.black};
-  }
 `;
 
 const Content = styled.div`
@@ -184,8 +163,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
   error,
   success,
 }) => {
-  const { resolved, toggle: toggleTheme } = useThemeMode();
-  const isDark = resolved === 'dark';
+  const t = useT();
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
 
@@ -198,13 +176,6 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
   if (submitted && success) {
     return (
       <Container>
-        <ThemeToggle
-            type="button"
-            onClick={toggleTheme}
-            aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
-          >
-            <Icon name={isDark ? 'sun' : 'moon'} size={24} />
-        </ThemeToggle>
 
         <Content>
           <LogoSection>
@@ -216,7 +187,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
             <ResetIcon>
               <Icon name="check" size={32} />
             </ResetIcon>
-            <Title>Email envoyé !</Title>
+            <Title>{t('forgot.sent')}</Title>
             <Description>
               Nous avons envoyé un lien de réinitialisation à :
             </Description>
@@ -237,13 +208,6 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
 
   return (
     <Container>
-      <ThemeToggle
-          type="button"
-          onClick={toggleTheme}
-          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
-        >
-          <Icon name={isDark ? 'sun' : 'moon'} size={24} />
-      </ThemeToggle>
 
       <Content>
         <LogoSection>
@@ -251,7 +215,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
           <Logo size="large" />
         </LogoSection>
 
-        <Title>Mot de passe oublié ?</Title>
+        <Title>{t('forgot.title')}</Title>
         <Description>
           Pas de panique ! Entrez votre email et nous vous enverrons
           un lien pour réinitialiser votre mot de passe.
@@ -274,7 +238,7 @@ export const ForgotPasswordPage: React.FC<ForgotPasswordPageProps> = ({
         <Form onSubmit={handleSubmit}>
           <Input
             type="email"
-            placeholder="Votre adresse email"
+            placeholder={t('login.email')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             fullWidth

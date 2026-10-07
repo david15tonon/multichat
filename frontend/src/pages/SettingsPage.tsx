@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useT } from '../i18n/I18nContext';
 import { Language, MessageTone } from '../types';
 import { Header } from '../components/organisms/Header';
 import { LanguagePicker } from '../components/molecules/LanguagePicker';
@@ -200,6 +201,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onLogout,
   onDeleteAccount,
 }) => {
+  const t = useT();
   const [activeTab, setActiveTab] = useState<'language' | 'tone' | 'account'>('language');
   const [nameDraft, setNameDraft] = useState(fullName ?? '');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -211,7 +213,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   return (
     <Container>
       <Header
-        title="PARAMÈTRES"
+        title={t('settings.title')}
         showBackButton
         onBackClick={onBackClick}
         showThemeToggle={false}
@@ -220,13 +222,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
 
       <TabNavigation>
         <Tab $active={activeTab === 'language'} onClick={() => setActiveTab('language')}>
-          <Icon name="globe" size={20} /> Langue
+          <Icon name="globe" size={20} /> {t('settings.tab.language')}
         </Tab>
         <Tab $active={activeTab === 'account'} onClick={() => setActiveTab('account')}>
-          <Icon name="user" size={20} /> Compte
+          <Icon name="user" size={20} /> {t('settings.tab.account')}
         </Tab>
         <Tab $active={activeTab === 'tone'} onClick={() => setActiveTab('tone')}>
-          <Icon name="chat" size={20} /> Ton & Registre
+          <Icon name="chat" size={20} /> {t('settings.tab.tone')}
         </Tab>
       </TabNavigation>
 
@@ -239,7 +241,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                   <Icon name="translate" size={32} />
                 </CardIconWrapper>
                 <div>
-                  <CardTitle>MultiChat Multilingue</CardTitle>
+                  <CardTitle>{t('settings.card.multilingual')}</CardTitle>
                 </div>
               </CardHeader>
               <CardDescription>
@@ -251,21 +253,21 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <FeatureGrid>
               <FeatureCard>
                 <Icon name="translate" size={32} />
-                <FeatureTitle>Traduction en temps réel</FeatureTitle>
+                <FeatureTitle>{t('settings.card.realtime')}</FeatureTitle>
                 <FeatureDescription>
                   Messages traduits instantanément dans votre langue
                 </FeatureDescription>
               </FeatureCard>
               <FeatureCard>
                 <Icon name="globe" size={32} />
-                <FeatureTitle>9+ langues</FeatureTitle>
+                <FeatureTitle>{t('settings.card.languages')}</FeatureTitle>
                 <FeatureDescription>
                   Français, Anglais, Espagnol et plus encore
                 </FeatureDescription>
               </FeatureCard>
               <FeatureCard>
                 <Icon name="check" size={32} />
-                <FeatureTitle>Précision élevée</FeatureTitle>
+                <FeatureTitle>{t('settings.card.accuracy')}</FeatureTitle>
                 <FeatureDescription>
                   IA avancée pour des traductions naturelles
                 </FeatureDescription>
@@ -281,7 +283,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <Icon name="chat" size={32} />
               </CardIconWrapper>
               <div>
-                <CardTitle>Adaptez votre ton selon vos interlocuteurs</CardTitle>
+                <CardTitle>{t('settings.card.toneTitle')}</CardTitle>
               </div>
             </CardHeader>
             <CardDescription>
@@ -290,7 +292,7 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             </CardDescription>
 
             <Section>
-              <SectionTitle>Registre de langue</SectionTitle>
+              <SectionTitle>{t('settings.tone.sectionTitle')}</SectionTitle>
               <ToneSelector selected={tone} onChange={onToneChange} variant="full" />
             </Section>
 
@@ -306,13 +308,13 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 <Icon name="user" size={32} />
               </CardIconWrapper>
               <div>
-                <CardTitle>Votre compte</CardTitle>
+                <CardTitle>{t('settings.account.title')}</CardTitle>
               </div>
             </CardHeader>
 
             <FieldRow>
               <Input
-                label="Nom affiché"
+                label={t('settings.account.displayName')}
                 value={nameDraft}
                 onChange={(event) => setNameDraft(event.target.value)}
                 fullWidth
@@ -323,12 +325,12 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 disabled={!nameDraft.trim() || nameDraft === fullName}
                 onClick={() => void onFullNameChange?.(nameDraft.trim())}
               >
-                Enregistrer
+                {t('common.save')}
               </Button>
             </FieldRow>
 
             <FieldRow>
-              <FieldLabel>Adresse e-mail</FieldLabel>
+              <FieldLabel>{t('settings.account.email')}</FieldLabel>
               <ReadOnlyValue>{email ?? '—'}</ReadOnlyValue>
             </FieldRow>
 
@@ -339,31 +341,28 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
                 onClick={onLogout}
                 icon={<Icon name="arrow-left" size={20} />}
               >
-                Se déconnecter
+                {t('settings.account.logout')}
               </Button>
             </FieldRow>
 
             <DangerZone>
-              <FieldLabel>Zone sensible</FieldLabel>
-              <DangerText>
-                La suppression du compte est définitive : profil, messages et
-                conversations sont effacés sans possibilité de retour.
-              </DangerText>
+              <FieldLabel>{t('settings.danger.title')}</FieldLabel>
+              <DangerText>{t('settings.danger.text')}</DangerText>
               {confirmingDelete ? (
                 <>
                   <DangerText>
-                    <strong>Confirmer la suppression définitive ?</strong>
+                    <strong>{t('settings.danger.confirm')}</strong>
                   </DangerText>
                   <Button variant="primary" onClick={() => void onDeleteAccount?.()}>
-                    Oui, supprimer mon compte
+                    {t('settings.danger.yes')}
                   </Button>
                   <Button variant="ghost" onClick={() => setConfirmingDelete(false)}>
-                    Annuler
+                    {t('common.cancel')}
                   </Button>
                 </>
               ) : (
                 <Button variant="ghost" onClick={() => setConfirmingDelete(true)}>
-                  Supprimer mon compte
+                  {t('settings.danger.delete')}
                 </Button>
               )}
             </DangerZone>

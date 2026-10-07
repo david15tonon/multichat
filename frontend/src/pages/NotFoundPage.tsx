@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useT } from '../i18n/I18nContext';
 import { Button, Icon, Logo } from '../components/atoms';
 
 const Container = styled.div`
@@ -27,16 +28,17 @@ const Message = styled.p`
   color: ${({ theme }) => theme.colors.neutral.gray};
 `;
 
-export const NotFoundPage: React.FC<{ onHome: () => void }> = ({ onHome }) => (
+export const NotFoundPage: React.FC<{ onHome: () => void }> = ({ onHome }) => {
+  const t = useT();
+
+  return (
   <Container>
     <Logo size="large" />
     <Code>404</Code>
-    <Message>
-      Cette page n’existe pas. Elle a peut-être été déplacée, ou l’adresse
-      comporte une faute de frappe.
-    </Message>
+    <Message>{t('notFound.message')}</Message>
     <Button variant="primary" onClick={onHome} icon={<Icon name="chat" size={20} />}>
-      Retour aux conversations
+      {t('notFound.home')}
     </Button>
   </Container>
-);
+  );
+};

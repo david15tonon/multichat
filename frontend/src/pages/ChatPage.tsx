@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
+import { useT } from '../i18n/I18nContext';
 import { Message, MessageTone } from '../types';
 import { Header } from '../components/organisms/Header';
 import { MessageComposer } from '../components/organisms/MessageComposer';
@@ -202,6 +203,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   showSettingsButton = false,
   onSettingsClick,
 }) => {
+  const t = useT();
   const [showError, setShowError] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -266,11 +268,8 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         {messages.length === 0 && (
           <EmptyConversation>
             <Icon name="send" size={40} />
-            <EmptyTitle>Aucun message</EmptyTitle>
-            <p>
-              Écrivez le premier message à {contactName}. Il sera traduit
-              automatiquement dans sa langue.
-            </p>
+            <EmptyTitle>{t('chat.emptyTitle')}</EmptyTitle>
+            <p>{t('chat.emptyHint', { name: contactName })}</p>
           </EmptyConversation>
         )}
 
@@ -278,7 +277,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
           <React.Fragment key={date}>
             <DateDivider>
               <DateBadge>
-                {date === new Date().toDateString() ? 'AUJOURD\'HUI' : date}
+                {date === new Date().toDateString() ? t('chat.today') : date}
               </DateBadge>
             </DateDivider>
             {msgs.map((message) => (
@@ -299,11 +298,11 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         <VideoCallButton
           onClick={onVideoCall}
           disabled={!isContactOnline}
-          aria-label={`Appeler ${contactName} en vidéo`}
+          aria-label={t('chat.callVideo', { name: contactName })}
           title={
             isContactOnline
-              ? `Appeler ${contactName} en vidéo`
-              : `${contactName} n’est pas connecté·e — l’appel ne peut pas aboutir`
+              ? t('chat.callVideo', { name: contactName })
+              : t('chat.callUnavailable', { name: contactName })
           }
         >
           <Icon name="video" size={24} color="currentColor" />
@@ -313,7 +312,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
       {isTyping && (
         <TypingIndicator>
           <Icon name="chat" size={14} />
-          {contactName} est en train d’écrire…
+          {t('chat.typing', { name: contactName })}
         </TypingIndicator>
       )}
 
@@ -324,20 +323,18 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         }}
         isConnected={isConnected}
         isTranslating={isTranslating}
-        placeholder="Oui, ça marche parfaitement !"
+        placeholder={t('chat.composerPlaceholder')}
       />
 
       <TranslationErrorModal $show={showError}>
         <ModalIcon>
           <Icon name="offline" size={40} />
         </ModalIcon>
-        <ModalTitle>Translation Unavailable</ModalTitle>
-        <ModalText>
-          We couldn't translate that last message. It looks like you've lost your internet connection.
-        </ModalText>
+        <ModalTitle>{t('chat.translationFailedTitle')}</ModalTitle>
+        <ModalText>{t('chat.translationFailedText')}</ModalText>
         <Button variant="secondary" onClick={() => setShowError(false)}>
           <Icon name="refresh" size={20} />
-          Try Again
+          {t('common.retry')}
         </Button>
       </TranslationErrorModal>
     </Container>

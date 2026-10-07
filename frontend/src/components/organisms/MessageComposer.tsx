@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { useT } from '../../i18n/I18nContext';
 import { MessageTone } from '../../types';
 import { Icon } from '../atoms/Icon';
 import { ToneSelector } from '../molecules/ToneSelector';
@@ -158,6 +159,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
   isTranslating = false,
   placeholder = 'Type a message...',
 }) => {
+  const t = useT();
   const [message, setMessage] = useState('');
   const [selectedTone, setSelectedTone] = useState<MessageTone>('standard');
   const [showPreview, setShowPreview] = useState(false);
@@ -191,7 +193,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         <ToneSelector selected={selectedTone} onChange={setSelectedTone} variant="compact" />
         <button
           type="button"
-          aria-label="Prévisualiser la traduction"
+          aria-label={t('chat.preview')}
           onClick={() => setShowPreview(!showPreview)}
           style={{
             background: 'none',
@@ -210,7 +212,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
         <PreviewArea>
           <PreviewLabel>
             {selectedTone.toUpperCase()}
-            <span>PRÉVISUALISATION (EN)</span>
+            <span>{t('chat.previewLabel')}</span>
           </PreviewLabel>
           <PreviewText>"{message}"</PreviewText>
         </PreviewArea>
@@ -227,14 +229,14 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             $isConnected={isConnected}
             rows={1}
           />
-          <EmojiButton type="button" aria-label="Insérer un émoji">
+          <EmojiButton type="button" aria-label={t('chat.emoji')}>
             <Icon name="smile" size={20} />
           </EmojiButton>
         </InputWrapper>
 
         <SendButton
           type="submit"
-          aria-label="Envoyer le message"
+          aria-label={t('chat.send')}
           $canSend={canSend}
           onClick={handleSend}
           disabled={!canSend}
