@@ -16,6 +16,8 @@ export interface ChatPageProps {
   showSettingsButton?: boolean;
   onSettingsClick?: () => void; 
   isConnected?: boolean;
+  /** Présence réelle du contact, issue des événements user_status. */
+  isContactOnline?: boolean;
   /** Un interlocuteur est en train d'écrire (reçu par WebSocket). */
   isTyping?: boolean;
   /** Une traduction est en cours côté serveur. */
@@ -171,9 +173,15 @@ const VideoCallButton = styled.button`
   box-shadow: 4px 4px 0 ${({ theme }) => theme.colors.neutral.black};
   transition: all ${({ theme }) => theme.transitions.normal};
 
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translate(-2px, -2px);
     box-shadow: 6px 6px 0 ${({ theme }) => theme.colors.neutral.black};
+  }
+
+  &:disabled {
+    background-color: ${({ theme }) => theme.colors.neutral.gray};
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 `;
 
@@ -186,6 +194,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   onBackClick,
   onVideoCall,
   isConnected = true,
+  isContactOnline = false,
   isTyping = false,
   isTranslating = false,
   onTypingChange,
@@ -247,7 +256,8 @@ export const ChatPage: React.FC<ChatPageProps> = ({
          showBackButton
          showSettingsButton={showSettingsButton}
          onSettingsClick={onSettingsClick}
-         isOnline={isConnected}
+         isOnline={isContactOnline}
+         isConnected={isConnected}
          userAvatar={contactAvatar}
          onBackClick={onBackClick}
 />
@@ -286,7 +296,16 @@ export const ChatPage: React.FC<ChatPageProps> = ({
       </MessagesArea>
 
       {onVideoCall && (
-        <VideoCallButton onClick={onVideoCall} aria-label={`Appeler ${contactName} en vidéo`}>
+        <VideoCallButton
+          onClick={onVideoCall}
+          disabled={!isContactOnline}
+          aria-label={`Appeler ${contactName} en vidéo`}
+          title={
+            isContactOnline
+              ? `Appeler ${contactName} en vidéo`
+              : `${contactName} n’est pas connecté·e — l’appel ne peut pas aboutir`
+          }
+        >
           <Icon name="video" size={24} color="currentColor" />
         </VideoCallButton>
       )}

@@ -20,6 +20,10 @@ interface UseChatResult {
   activeConversationId: string | null;
   contact: ReturnType<typeof otherParticipant>;
   isConnected: boolean;
+  /** Identifiants des utilisateurs actuellement joignables en temps réel. */
+  onlineUsers: Set<string>;
+  /** Le contact de la conversation active est-il joignable ? */
+  isContactOnline: boolean;
   isTyping: boolean;
   error: string | null;
   selectConversation: (id: string | null) => void;
@@ -41,6 +45,9 @@ export function useChat(
   const [messages, setMessages] = useState<Message[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+  // Présence temps réel. `is_online` en base reflète la dernière connexion
+  // connue et peut être périmé ; seuls les événements du socket font foi.
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set());
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<ChatSocket | null>(null);
@@ -51,6 +58,16 @@ export function useChat(
     try {
       const list = await api.conversations();
       setConversations(list);
+      setOnlineUsers((current) => {
+        const next = new Set(current);
+        list.forEach((conversation) =>
+          conversation.participants.forEach((participant) => {
+            if (participant.is_online) next.add(participant.id);
+            else next.delete(participant.id);
+          }),
+        );
+        return next;
+      });
       setActiveConversationId((current) => current ?? list[0]?.id ?? null);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Chargement impossible');
@@ -78,6 +95,13 @@ export function useChat(
         );
       } else if (event.type === 'typing') {
         setIsTyping(event.data.is_typing);
+      } else if (event.type === 'user_status') {
+        setOnlineUsers((current) => {
+          const next = new Set(current);
+          if (event.data.is_online) next.add(event.data.user_id);
+          else next.delete(event.data.user_id);
+          return next;
+        });
       } else if (event.type.startsWith('call:')) {
         onCallSignal?.(event);
       } else if (event.type === 'read') {
@@ -173,6 +197,10 @@ export function useChat(
   );
 
   const activeConversation = conversations.find((c) => c.id === activeConversationId);
+  const contactId =
+    activeConversation && currentUserId
+      ? otherParticipant(activeConversation, currentUserId)?.id
+      : undefined;
 
   return {
     conversations,
@@ -182,6 +210,8 @@ export function useChat(
       ? otherParticipant(activeConversation, currentUserId)
       : undefined,
     isConnected,
+    onlineUsers,
+    isContactOnline: contactId !== undefined && onlineUsers.has(contactId),
     isTyping,
     error,
     selectConversation: setActiveConversationId,

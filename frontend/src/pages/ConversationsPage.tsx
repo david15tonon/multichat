@@ -7,6 +7,8 @@ import type { ConversationPublic, UserPublic } from '../lib/api';
 export interface ConversationsPageProps {
   currentUserId: string;
   conversations: ConversationPublic[];
+  /** Présences temps réel ; plus fiables que `is_online` en base. */
+  onlineUsers?: Set<string>;
   isLoading?: boolean;
   error?: string;
   onOpenConversation: (conversationId: string) => void;
@@ -126,6 +128,7 @@ const SEARCH_DEBOUNCE_MS = 300;
 export const ConversationsPage: React.FC<ConversationsPageProps> = ({
   currentUserId,
   conversations,
+  onlineUsers,
   isLoading = false,
   error,
   onOpenConversation,
@@ -185,12 +188,12 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
           id: conversation.id,
           title: conversation.name ?? other?.full_name ?? 'Conversation',
           avatar: other?.avatar_url ?? undefined,
-          isOnline: other?.is_online ?? false,
+          isOnline: other ? (onlineUsers?.has(other.id) ?? other.is_online) : false,
           unread: conversation.unread_count,
           preview: conversation.last_message?.content ?? 'Aucun message pour l’instant',
         };
       }),
-    [conversations, currentUserId],
+    [conversations, currentUserId, onlineUsers],
   );
 
   return (
@@ -228,7 +231,7 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
                       src={user.avatar_url ?? undefined}
                       alt={user.full_name}
                       size="medium"
-                      isOnline={user.is_online}
+                      isOnline={onlineUsers?.has(user.id) ?? user.is_online}
                       initials={user.full_name.slice(0, 2).toUpperCase()}
                     />
                     <RowText>

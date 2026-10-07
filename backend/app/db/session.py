@@ -58,3 +58,18 @@ async def init_db() -> None:
 async def close_db() -> None:
     """Close database connection"""
     await engine.dispose()
+
+
+async def reset_presence() -> None:
+    """Remet tous les utilisateurs hors ligne.
+
+    Appelé au démarrage : les sessions WebSocket ne survivent pas au processus,
+    donc toute présence héritée du run précédent est fausse.
+    """
+    from sqlalchemy import update
+
+    from app.models.user import User
+
+    async with AsyncSessionLocal() as session:
+        await session.execute(update(User).values(is_online=False))
+        await session.commit()

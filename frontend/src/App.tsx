@@ -109,6 +109,7 @@ function ConversationsRoute() {
     <ConversationsPage
       currentUserId={user?.id ?? ''}
       conversations={chat.conversations}
+      onlineUsers={chat.onlineUsers}
       error={chat.error ?? undefined}
       onOpenConversation={(id) => navigate(`/chat/${id}`)}
       onSearchUsers={(query) => api.searchUsers(query)}
@@ -137,39 +138,22 @@ function ChatRoute() {
   const peerName = chat.contact?.full_name ?? 'Conversation';
 
   return (
-    <>
-      <ChatPage
-        currentUserId={user?.id ?? ''}
-        contactName={peerName}
-        contactAvatar={chat.contact?.avatar_url ?? ''}
-        messages={chat.messages}
-        onSendMessage={(content: string, tone: MessageTone) => void chat.sendMessage(content, tone)}
-        onBackClick={() => navigate('/conversations')}
-        onSettingsClick={() => navigate('/settings')}
-        showSettingsButton
-        isConnected={chat.isConnected}
-        isTyping={chat.isTyping}
-        onTypingChange={chat.notifyTyping}
-        onMessageRead={chat.markRead}
-        onVideoCall={chat.contact ? () => void call.startCall(chat.contact!.id) : undefined}
-      />
-
-      <CallOverlay
-        callState={call.callState}
-        peerName={peerName}
-        peerAvatar={chat.contact?.avatar_url ?? undefined}
-        localStream={call.localStream}
-        remoteStream={call.remoteStream}
-        isMuted={call.isMuted}
-        isCameraOff={call.isCameraOff}
-        error={call.error}
-        onAccept={() => void call.acceptCall()}
-        onReject={call.rejectCall}
-        onHangUp={call.hangUp}
-        onToggleMute={call.toggleMute}
-        onToggleCamera={call.toggleCamera}
-      />
-    </>
+    <ChatPage
+      currentUserId={user?.id ?? ''}
+      contactName={peerName}
+      contactAvatar={chat.contact?.avatar_url ?? ''}
+      messages={chat.messages}
+      onSendMessage={(content: string, tone: MessageTone) => void chat.sendMessage(content, tone)}
+      onBackClick={() => navigate('/conversations')}
+      onSettingsClick={() => navigate('/settings')}
+      showSettingsButton
+      isConnected={chat.isConnected}
+      isContactOnline={chat.isContactOnline}
+      isTyping={chat.isTyping}
+      onTypingChange={chat.notifyTyping}
+      onMessageRead={chat.markRead}
+      onVideoCall={chat.contact ? () => void call.startCall(chat.contact!.id) : undefined}
+    />
   );
 }
 
@@ -198,6 +182,38 @@ function SettingsRoute() {
         await api.deleteAccount();
         await leave();
       }}
+    />
+  );
+}
+
+/**
+ * Appels rendus au-dessus des routes : la signalisation arrive sur le socket
+ * quelle que soit la page affichée. Confiné à ChatRoute, un appel reçu depuis
+ * l'inbox ou les réglages sonnait dans le vide.
+ */
+function GlobalCall() {
+  const chat = useChatSession();
+  const call = chat.call;
+
+  const peer = chat.conversations
+    .flatMap((conversation) => conversation.participants)
+    .find((participant) => participant.id === call.peerId);
+
+  return (
+    <CallOverlay
+      callState={call.callState}
+      peerName={peer?.full_name ?? 'Correspondant'}
+      peerAvatar={peer?.avatar_url ?? undefined}
+      localStream={call.localStream}
+      remoteStream={call.remoteStream}
+      isMuted={call.isMuted}
+      isCameraOff={call.isCameraOff}
+      error={call.error}
+      onAccept={() => void call.acceptCall()}
+      onReject={call.rejectCall}
+      onHangUp={call.hangUp}
+      onToggleMute={call.toggleMute}
+      onToggleCamera={call.toggleCamera}
     />
   );
 }
@@ -243,6 +259,7 @@ export default function App() {
         <AuthProvider>
           <ChatProvider>
             <AppRoutes />
+            <GlobalCall />
           </ChatProvider>
         </AuthProvider>
       </BrowserRouter>

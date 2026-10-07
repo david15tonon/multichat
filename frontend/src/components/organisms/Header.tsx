@@ -11,7 +11,11 @@ export interface HeaderProps {
   showSettingsButton?: boolean;
   showThemeToggle?: boolean;
   userAvatar?: string;
+  /** Présence de la personne dont l'en-tête porte le nom. */
   isOnline?: boolean;
+  /** Mon propre lien temps réel avec le serveur. Deux notions distinctes :
+   *  les confondre faisait annoncer « en ligne » un contact déconnecté. */
+  isConnected?: boolean;
   onBackClick?: () => void;
   onSettingsClick?: () => void;
   onThemeToggle?: () => void;
@@ -128,6 +132,7 @@ export const Header: React.FC<HeaderProps> = ({
   showThemeToggle = true,
   userAvatar,
   isOnline,
+  isConnected,
   onBackClick,
   onSettingsClick,
   onThemeToggle,
@@ -162,8 +167,8 @@ export const Header: React.FC<HeaderProps> = ({
 
       <RightSection>
         {isOnline !== undefined && (
-          <ConnectionBadge $isOnline={isOnline}>
-            {isOnline ? 'CONNECTED' : 'NO CONNECTION'}
+          <ConnectionBadge $isOnline={isConnected ?? false}>
+            {isConnected ? 'CONNECTÉ' : 'HORS CONNEXION'}
           </ConnectionBadge>
         )}
 

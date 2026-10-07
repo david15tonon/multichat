@@ -5,7 +5,7 @@ from contextlib import asynccontextmanager
 
 from app.core.config import settings
 from app.api import api_router
-from app.db.session import init_db, close_db
+from app.db.session import init_db, close_db, reset_presence
 
 
 @asynccontextmanager
@@ -17,6 +17,12 @@ async def lifespan(app: FastAPI):
     print("🚀 Starting MultiChat API...")
     await init_db()
     print("✅ Database initialized")
+
+    # `is_online` est positionné à la connexion et à la déconnexion WebSocket.
+    # Un arrêt brutal laisse donc des utilisateurs marqués en ligne alors que
+    # plus aucune session n'existe : au démarrage, personne n'est connecté.
+    await reset_presence()
+    print("✅ Présence réinitialisée")
     
     yield
     
