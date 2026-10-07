@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Theme } from '../../styles/theme';
 
 export interface AvatarProps {
   src?: string;
@@ -25,7 +24,8 @@ const AvatarContainer = styled.div<{
   cursor: ${({ $clickable }) => ($clickable ? 'pointer' : 'default')};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   background-color: ${({ theme }) => theme.colors.primary.orange};
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
 
   ${({ $size, theme }) => {

@@ -9,7 +9,6 @@ export interface ChatPageProps {
   currentUserId: string;
   contactName: string;
   contactAvatar?: string;
-  isOnline?: boolean;
   messages: Message[];
   onSendMessage: (content: string, tone: MessageTone) => void;
   onBackClick?: () => void;
@@ -17,6 +16,14 @@ export interface ChatPageProps {
   showSettingsButton?: boolean;
   onSettingsClick?: () => void; 
   isConnected?: boolean;
+  /** Un interlocuteur est en train d'écrire (reçu par WebSocket). */
+  isTyping?: boolean;
+  /** Une traduction est en cours côté serveur. */
+  isTranslating?: boolean;
+  /** Prévient le parent de la frappe locale, pour l'émettre sur le socket. */
+  onTypingChange?: (isTyping: boolean) => void;
+  /** Signale qu'un message reçu a été vu (accusé de lecture). */
+  onMessageRead?: (messageId: string) => void;
 }
 
 const Container = styled.div`
@@ -89,7 +96,7 @@ const TranslationErrorModal = styled.div<{ $show: boolean }>`
   gap: ${({ theme }) => theme.spacing.lg};
   max-width: 400px;
   width: 90%;
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   text-align: center;
 `;
 
@@ -117,7 +124,40 @@ const ModalText = styled.p`
   line-height: 1.6;
 `;
 
+const TypingIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: ${({ theme }) => theme.spacing.sm};
+  padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.lg};
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-style: italic;
+  color: ${({ theme }) => theme.colors.neutral.gray};
+`;
+
+const EmptyConversation = styled.div`
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.xl};
+  text-align: center;
+  color: ${({ theme }) => theme.colors.neutral.gray};
+`;
+
+const EmptyTitle = styled.p`
+  margin: 0;
+  font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
+  font-size: ${({ theme }) => theme.typography.fontSize.lg};
+  color: ${({ theme }) => theme.colors.neutral.black};
+`;
+
 const VideoCallButton = styled.button`
+  position: absolute;
+  right: ${({ theme }) => theme.spacing.lg};
+  bottom: 96px;
+  z-index: ${({ theme }) => theme.zIndex.dropdown};
   width: 56px;
   height: 56px;
   display: flex;
@@ -127,7 +167,7 @@ const VideoCallButton = styled.button`
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: 50%;
   cursor: pointer;
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   box-shadow: 4px 4px 0 ${({ theme }) => theme.colors.neutral.black};
   transition: all ${({ theme }) => theme.transitions.normal};
 
@@ -141,12 +181,15 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   currentUserId,
   contactName,
   contactAvatar,
-  isOnline = true,
   messages,
   onSendMessage,
   onBackClick,
   onVideoCall,
   isConnected = true,
+  isTyping = false,
+  isTranslating = false,
+  onTypingChange,
+  onMessageRead,
   showSettingsButton = false,
   onSettingsClick,
 }) => {
@@ -181,13 +224,26 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     return groups;
   };
 
+  // Accusés de lecture : tout message reçu et non encore lu est signalé une
+  // seule fois au parent, qui l'émet sur le socket et le persiste via REST.
+  const readSent = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    if (!onMessageRead) return;
+    messages
+      .filter((m) => m.senderId !== currentUserId && m.status !== 'read')
+      .forEach((m) => {
+        if (readSent.current.has(m.id)) return;
+        readSent.current.add(m.id);
+        onMessageRead(m.id);
+      });
+  }, [messages, currentUserId, onMessageRead]);
+
   const messageGroups = groupMessagesByDate(messages);
 
   return (
     <Container>
       <Header
          title={contactName}
-         subtitle="EN LIGNE"
          showBackButton
          showSettingsButton={showSettingsButton}
          onSettingsClick={onSettingsClick}
@@ -197,6 +253,17 @@ export const ChatPage: React.FC<ChatPageProps> = ({
 />
 
       <MessagesArea>
+        {messages.length === 0 && (
+          <EmptyConversation>
+            <Icon name="send" size={40} />
+            <EmptyTitle>Aucun message</EmptyTitle>
+            <p>
+              Écrivez le premier message à {contactName}. Il sera traduit
+              automatiquement dans sa langue.
+            </p>
+          </EmptyConversation>
+        )}
+
         {Object.entries(messageGroups).map(([date, msgs]) => (
           <React.Fragment key={date}>
             <DateDivider>
@@ -218,9 +285,26 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         <div ref={messagesEndRef} />
       </MessagesArea>
 
+      {onVideoCall && (
+        <VideoCallButton onClick={onVideoCall} aria-label={`Appeler ${contactName} en vidéo`}>
+          <Icon name="video" size={24} color="currentColor" />
+        </VideoCallButton>
+      )}
+
+      {isTyping && (
+        <TypingIndicator>
+          <Icon name="chat" size={14} />
+          {contactName} est en train d’écrire…
+        </TypingIndicator>
+      )}
+
       <MessageComposer
-        onSend={onSendMessage}
+        onSend={(content, tone) => {
+          onTypingChange?.(false);
+          onSendMessage(content, tone);
+        }}
         isConnected={isConnected}
+        isTranslating={isTranslating}
         placeholder="Oui, ça marche parfaitement !"
       />
 

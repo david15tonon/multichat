@@ -93,7 +93,7 @@ const ChatBubble = styled.div<{ $size: LogoProps['size'] }>`
   &::after {
     content: '';
     position: absolute;
-    background-color: ${({ theme }) => theme.colors.neutral.black};
+    background-color: ${({ theme }) => theme.colors.neutral.overlay};
     border-radius: 50%;
   }
 
@@ -136,6 +136,7 @@ const ChatBubble = styled.div<{ $size: LogoProps['size'] }>`
 const PersonIcon = styled.div<{ $size: LogoProps['size'] }>`
   position: absolute;
   background-color: ${({ theme }) => theme.colors.primary.orange};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
   border: 2px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: 50%;
 

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Logo, Button, Input, Icon } from '../components/atoms';
+import { useThemeMode } from '../contexts/ThemeContext';
+import { Logo, Button, Input, Icon, VisuallyHidden } from '../components/atoms';
 
 export interface LoginPageProps {
   onLogin: (email: string, password: string) => void;
@@ -16,6 +17,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${({ theme }) => theme.colors.primary.yellow};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
   padding: ${({ theme }) => theme.spacing.xl};
 `;
 
@@ -63,6 +65,7 @@ const Illustration = styled.div`
   width: 200px;
   height: 150px;
   background-color: ${({ theme }) => theme.colors.primary.orange};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: ${({ theme }) => theme.borderRadius.lg};
   display: flex;
@@ -116,7 +119,7 @@ const ChatBubbleDecor = styled.div`
     content: '';
     width: 6px;
     height: 6px;
-    background-color: ${({ theme }) => theme.colors.neutral.black};
+    background-color: ${({ theme }) => theme.colors.neutral.overlay};
     border-radius: 50%;
   }
 `;
@@ -131,7 +134,7 @@ const Form = styled.form`
 const ErrorMessage = styled.div`
   padding: ${({ theme }) => theme.spacing.md};
   background-color: ${({ theme }) => theme.colors.status.error};
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
@@ -152,7 +155,7 @@ const Divider = styled.div`
     content: '';
     flex: 1;
     height: 3px;
-    background-color: ${({ theme }) => theme.colors.neutral.black};
+    background-color: ${({ theme }) => theme.colors.neutral.overlay};
   }
 
   span {
@@ -196,6 +199,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({
   isLoading = false,
   error,
 }) => {
+  const { resolved, toggle: toggleTheme } = useThemeMode();
+  const isDark = resolved === 'dark';
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -206,8 +211,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({
 
   return (
     <Container>
-      <ThemeToggle>
-        <Icon name="moon" size={24} />
+      <ThemeToggle
+          type="button"
+          onClick={toggleTheme}
+          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+        >
+          <Icon name={isDark ? 'sun' : 'moon'} size={24} />
       </ThemeToggle>
 
       <Content>
@@ -256,19 +265,31 @@ export const LoginPage: React.FC<LoginPageProps> = ({
         <SocialButtons>
           <Button
             variant="social"
+            disabled
+            title="Connexion sociale bientôt disponible"
             onClick={() => onSocialLogin('google')}
             icon={<Icon name="google" size={20} />}
-          />
+          >
+            <VisuallyHidden>Se connecter avec Google</VisuallyHidden>
+          </Button>
           <Button
             variant="social"
+            disabled
+            title="Connexion sociale bientôt disponible"
             onClick={() => onSocialLogin('apple')}
             icon={<Icon name="apple" size={20} />}
-          />
+          >
+            <VisuallyHidden>Se connecter avec Apple</VisuallyHidden>
+          </Button>
           <Button
             variant="social"
+            disabled
+            title="Connexion sociale bientôt disponible"
             onClick={() => onSocialLogin('twitter')}
             icon={<Icon name="x" size={20} />}
-          />
+          >
+            <VisuallyHidden>Se connecter avec X</VisuallyHidden>
+          </Button>
         </SocialButtons>
 
         <LinksSection>

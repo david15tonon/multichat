@@ -3,3 +3,6 @@ export type { HeaderProps } from './Header';
 
 export { MessageComposer } from './MessageComposer';
 export type { MessageComposerProps } from './MessageComposer';
+
+export { CallOverlay } from './CallOverlay';
+export type { CallOverlayProps } from './CallOverlay';

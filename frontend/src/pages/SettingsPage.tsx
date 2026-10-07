@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Language, MessageTone } from '../types';
 import { Header } from '../components/organisms/Header';
 import { LanguagePicker } from '../components/molecules/LanguagePicker';
 import { ToneSelector } from '../components/molecules/ToneSelector';
-import { Icon } from '../components/atoms/Icon';
+import { Button, Icon, Input } from '../components/atoms';
 
 export interface SettingsPageProps {
   language: Language;
@@ -12,6 +12,12 @@ export interface SettingsPageProps {
   onLanguageChange: (language: Language) => void;
   onToneChange: (tone: MessageTone) => void;
   onBackClick?: () => void;
+  /** Profil affiché dans l'onglet Compte. */
+  fullName?: string;
+  email?: string;
+  onFullNameChange?: (fullName: string) => void | Promise<void>;
+  onLogout?: () => void;
+  onDeleteAccount?: () => void | Promise<void>;
 }
 
 const Container = styled.div`
@@ -30,6 +36,45 @@ const Content = styled.div`
   display: flex;
   flex-direction: column;
   gap: ${({ theme }) => theme.spacing.xl};
+`;
+
+const FieldRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.sm};
+  margin-bottom: ${({ theme }) => theme.spacing.lg};
+`;
+
+const ReadOnlyValue = styled.p`
+  margin: 0;
+  padding: ${({ theme }) => theme.spacing.md};
+  background-color: ${({ theme }) => theme.colors.neutral.lightGray};
+  border: 3px solid ${({ theme }) => theme.colors.neutral.black};
+  border-radius: ${({ theme }) => theme.borderRadius.md};
+  color: ${({ theme }) => theme.colors.neutral.gray};
+`;
+
+const FieldLabel = styled.span`
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: ${({ theme }) => theme.colors.neutral.gray};
+`;
+
+const DangerZone = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${({ theme }) => theme.spacing.md};
+  padding: ${({ theme }) => theme.spacing.lg};
+  border: 3px dashed ${({ theme }) => theme.colors.status.error};
+  border-radius: ${({ theme }) => theme.borderRadius.lg};
+`;
+
+const DangerText = styled.p`
+  margin: 0;
+  font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  color: ${({ theme }) => theme.colors.neutral.gray};
 `;
 
 const Card = styled.div`
@@ -56,7 +101,7 @@ const CardIconWrapper = styled.div<{ $color: string }>`
   background-color: ${({ $color }) => $color};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: ${({ theme }) => theme.borderRadius.md};
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
 `;
 
 const CardTitle = styled.h2`
@@ -97,6 +142,7 @@ const FeatureGrid = styled.div`
 const FeatureCard = styled.div`
   padding: ${({ theme }) => theme.spacing.lg};
   background-color: ${({ theme }) => theme.colors.primary.yellow};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   display: flex;
@@ -148,8 +194,19 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   onLanguageChange,
   onToneChange,
   onBackClick,
+  fullName,
+  email,
+  onFullNameChange,
+  onLogout,
+  onDeleteAccount,
 }) => {
-  const [activeTab, setActiveTab] = useState<'language' | 'tone'>('language');
+  const [activeTab, setActiveTab] = useState<'language' | 'tone' | 'account'>('language');
+  const [nameDraft, setNameDraft] = useState(fullName ?? '');
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+
+  useEffect(() => {
+    setNameDraft(fullName ?? '');
+  }, [fullName]);
 
   return (
     <Container>
@@ -164,6 +221,9 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
       <TabNavigation>
         <Tab $active={activeTab === 'language'} onClick={() => setActiveTab('language')}>
           <Icon name="globe" size={20} /> Langue
+        </Tab>
+        <Tab $active={activeTab === 'account'} onClick={() => setActiveTab('account')}>
+          <Icon name="user" size={20} /> Compte
         </Tab>
         <Tab $active={activeTab === 'tone'} onClick={() => setActiveTab('tone')}>
           <Icon name="chat" size={20} /> Ton & Registre
@@ -237,6 +297,76 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
             <p style={{ fontSize: '14px', color: '#8E8E93', marginTop: '16px' }}>
               Vous pourrez modifier ces réglages plus tard.
             </p>
+          </Card>
+        )}
+        {activeTab === 'account' && (
+          <Card>
+            <CardHeader>
+              <CardIconWrapper $color="#6C5CE7">
+                <Icon name="user" size={32} />
+              </CardIconWrapper>
+              <div>
+                <CardTitle>Votre compte</CardTitle>
+              </div>
+            </CardHeader>
+
+            <FieldRow>
+              <Input
+                label="Nom affiché"
+                value={nameDraft}
+                onChange={(event) => setNameDraft(event.target.value)}
+                fullWidth
+              />
+              <Button
+                variant="primary"
+                size="small"
+                disabled={!nameDraft.trim() || nameDraft === fullName}
+                onClick={() => void onFullNameChange?.(nameDraft.trim())}
+              >
+                Enregistrer
+              </Button>
+            </FieldRow>
+
+            <FieldRow>
+              <FieldLabel>Adresse e-mail</FieldLabel>
+              <ReadOnlyValue>{email ?? '—'}</ReadOnlyValue>
+            </FieldRow>
+
+            <FieldRow>
+              <Button
+                variant="outline"
+                fullWidth
+                onClick={onLogout}
+                icon={<Icon name="arrow-left" size={20} />}
+              >
+                Se déconnecter
+              </Button>
+            </FieldRow>
+
+            <DangerZone>
+              <FieldLabel>Zone sensible</FieldLabel>
+              <DangerText>
+                La suppression du compte est définitive : profil, messages et
+                conversations sont effacés sans possibilité de retour.
+              </DangerText>
+              {confirmingDelete ? (
+                <>
+                  <DangerText>
+                    <strong>Confirmer la suppression définitive ?</strong>
+                  </DangerText>
+                  <Button variant="primary" onClick={() => void onDeleteAccount?.()}>
+                    Oui, supprimer mon compte
+                  </Button>
+                  <Button variant="ghost" onClick={() => setConfirmingDelete(false)}>
+                    Annuler
+                  </Button>
+                </>
+              ) : (
+                <Button variant="ghost" onClick={() => setConfirmingDelete(true)}>
+                  Supprimer mon compte
+                </Button>
+              )}
+            </DangerZone>
           </Card>
         )}
       </Content>

@@ -1,6 +1,5 @@
 import React from 'react';
 import styled from 'styled-components';
-import { Theme } from '../../styles/theme';
 
 export interface ButtonProps {
   children: React.ReactNode;
@@ -13,6 +12,8 @@ export interface ButtonProps {
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
   type?: 'button' | 'submit' | 'reset';
   ariaLabel?: string;
+  /** Infobulle native — utile pour expliquer un bouton désactivé. */
+  title?: string;
 }
 
 const StyledButton = styled.button<{
@@ -161,6 +162,7 @@ export const Button: React.FC<ButtonProps> = ({
   onClick,
   type = 'button',
   ariaLabel,
+  title,
 }) => {
   return (
     <StyledButton
@@ -172,6 +174,7 @@ export const Button: React.FC<ButtonProps> = ({
       onClick={onClick}
       type={type}
       aria-label={ariaLabel}
+      title={title}
     >
       {loading ? <LoadingSpinner /> : icon}
       {children}

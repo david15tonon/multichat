@@ -94,7 +94,7 @@ const SendButton = styled.button<{ $canSend: boolean }>`
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: 50%;
   cursor: ${({ $canSend }) => ($canSend ? 'pointer' : 'not-allowed')};
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   box-shadow: 4px 4px 0 ${({ theme }) => theme.colors.neutral.black};
   transition: all ${({ theme }) => theme.transitions.normal};
   opacity: ${({ $canSend }) => ($canSend ? 1 : 0.6)};
@@ -146,7 +146,7 @@ const DisconnectedMessage = styled.div`
   text-align: center;
   padding: ${({ theme }) => theme.spacing.sm};
   background-color: ${({ theme }) => theme.colors.status.warning};
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
   font-weight: ${({ theme }) => theme.typography.fontWeight.semibold};
@@ -190,6 +190,8 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
       <ToneRow>
         <ToneSelector selected={selectedTone} onChange={setSelectedTone} variant="compact" />
         <button
+          type="button"
+          aria-label="Prévisualiser la traduction"
           onClick={() => setShowPreview(!showPreview)}
           style={{
             background: 'none',
@@ -225,12 +227,18 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             $isConnected={isConnected}
             rows={1}
           />
-          <EmojiButton>
+          <EmojiButton type="button" aria-label="Insérer un émoji">
             <Icon name="smile" size={20} />
           </EmojiButton>
         </InputWrapper>
 
-        <SendButton $canSend={canSend} onClick={handleSend} disabled={!canSend}>
+        <SendButton
+          type="submit"
+          aria-label="Envoyer le message"
+          $canSend={canSend}
+          onClick={handleSend}
+          disabled={!canSend}
+        >
           <Icon name="send" size={24} />
         </SendButton>
       </InputRow>

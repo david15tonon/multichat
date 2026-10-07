@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Logo, Button, Input, Icon } from '../components/atoms';
+import { useThemeMode } from '../contexts/ThemeContext';
+import { Logo, Button, Input, Icon, VisuallyHidden } from '../components/atoms';
+import { LanguagePicker } from '../components/molecules/LanguagePicker';
+import type { Language } from '../types';
 
 export interface SignupPageProps {
-  onSignup: (name: string, email: string, password: string) => void;
+  onSignup: (name: string, email: string, password: string, language: Language) => void;
   onSocialSignup: (provider: 'google' | 'apple' | 'twitter') => void;
   onLoginClick: () => void;
   onTermsClick: () => void;
@@ -17,6 +20,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   background-color: ${({ theme }) => theme.colors.primary.orange};
+  color: ${({ theme }) => theme.colors.neutral.onBright};
   padding: ${({ theme }) => theme.spacing.xl};
 `;
 
@@ -123,7 +127,7 @@ const Form = styled.form`
 const ErrorMessage = styled.div`
   padding: ${({ theme }) => theme.spacing.md};
   background-color: ${({ theme }) => theme.colors.status.error};
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
   border: 3px solid ${({ theme }) => theme.colors.neutral.black};
   border-radius: ${({ theme }) => theme.borderRadius.md};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
@@ -166,7 +170,7 @@ const Divider = styled.div`
     content: '';
     flex: 1;
     height: 3px;
-    background-color: ${({ theme }) => theme.colors.neutral.black};
+    background-color: ${({ theme }) => theme.colors.neutral.overlay};
   }
 
   span {
@@ -228,6 +232,8 @@ export const SignupPage: React.FC<SignupPageProps> = ({
   isLoading = false,
   error,
 }) => {
+  const { resolved, toggle: toggleTheme } = useThemeMode();
+  const isDark = resolved === 'dark';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -239,22 +245,35 @@ export const SignupPage: React.FC<SignupPageProps> = ({
     uppercase: /[A-Z]/.test(password),
     lowercase: /[a-z]/.test(password),
     number: /[0-9]/.test(password),
-    match: password && confirmPassword && password === confirmPassword,
+    match: !!password && !!confirmPassword && password === confirmPassword,
   };
 
   const isPasswordValid = Object.values(passwordChecks).every(Boolean);
 
+  // Le backend applique `en` par défaut : sans ce choix, un francophone
+  // recevrait ses messages traduits vers l'anglais. On pré-remplit avec la
+  // langue du navigateur quand elle fait partie des langues supportées.
+  const [language, setLanguage] = useState<Language>(() => {
+    const supported: Language[] = ['fr', 'en', 'es', 'de', 'it', 'pt', 'zh', 'ja', 'ar'];
+    const navigatorLanguage = navigator.language.slice(0, 2) as Language;
+    return supported.includes(navigatorLanguage) ? navigatorLanguage : 'fr';
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (isPasswordValid) {
-      onSignup(name, email, password);
+      onSignup(name, email, password, language);
     }
   };
 
   return (
     <Container>
-      <ThemeToggle>
-        <Icon name="moon" size={24} />
+      <ThemeToggle
+          type="button"
+          onClick={toggleTheme}
+          aria-label={isDark ? 'Passer en mode clair' : 'Passer en mode sombre'}
+        >
+          <Icon name={isDark ? 'sun' : 'moon'} size={24} />
       </ThemeToggle>
 
       <Content>
@@ -309,6 +328,12 @@ export const SignupPage: React.FC<SignupPageProps> = ({
             required
           />
 
+          <LanguagePicker
+            selected={language}
+            onChange={setLanguage}
+            label="Votre langue — vous recevrez les messages traduits dedans"
+          />
+
           <PasswordRequirements>
             <RequirementItem $met={passwordChecks.length}>
               <Icon name={passwordChecks.length ? 'check' : 'x'} size={12} />
@@ -350,19 +375,31 @@ export const SignupPage: React.FC<SignupPageProps> = ({
         <SocialButtons>
           <Button
             variant="social"
+            disabled
+            title="Connexion sociale bientôt disponible"
             onClick={() => onSocialSignup('google')}
             icon={<Icon name="google" size={20} />}
-          />
+          >
+            <VisuallyHidden>S'inscrire avec Google</VisuallyHidden>
+          </Button>
           <Button
             variant="social"
+            disabled
+            title="Connexion sociale bientôt disponible"
             onClick={() => onSocialSignup('apple')}
             icon={<Icon name="apple" size={20} />}
-          />
+          >
+            <VisuallyHidden>S'inscrire avec Apple</VisuallyHidden>
+          </Button>
           <Button
             variant="social"
+            disabled
+            title="Connexion sociale bientôt disponible"
             onClick={() => onSocialSignup('twitter')}
             icon={<Icon name="x" size={20} />}
-          />
+          >
+            <VisuallyHidden>S'inscrire avec X</VisuallyHidden>
+          </Button>
         </SocialButtons>
 
         <TermsSection>

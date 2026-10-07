@@ -2,7 +2,6 @@ import React from 'react';
 import styled from 'styled-components';
 import { MessageTone } from '../../types';
 import { Icon } from '../atoms/Icon';
-import { Theme } from '../../styles/theme';
 
 export interface ToneSelectorProps {
   selected: MessageTone;
@@ -20,19 +19,22 @@ const tones: Array<{
   {
     value: 'casual',
     label: 'Décontracté',
-    description: '"Salut ! Ça va ?"',
+    description: 'Entre amis, ton détendu',
+    example: '"Salut ! Ça va ?"',
     icon: 'smile',
   },
   {
     value: 'standard',
     label: 'Standard',
-    description: '"Bonjour, comment allez-vous ?"',
+    description: 'Poli sans être guindé',
+    example: '"Bonjour, comment allez-vous ?"',
     icon: 'user',
   },
   {
     value: 'formal',
     label: 'Soutenu',
-    description: '"Je vous prie d\'agréer mes salutations."',
+    description: 'Registre professionnel',
+    example: '"Je vous prie d\'agréer mes salutations."',
     icon: 'briefcase',
   },
 ];
@@ -86,7 +88,7 @@ const IconWrapper = styled.div<{ $selected: boolean;  }>`
     $selected ? theme.colors.primary.orange : theme.colors.primary.purple};
   border: 2px solid ${({ theme }) => theme.colors.neutral.black};
   flex-shrink: 0;
-  color: ${({ theme }) => theme.colors.neutral.white};
+  color: ${({ theme }) => theme.colors.neutral.onAccent};
 `;
 
 const TextContent = styled.div`
@@ -105,6 +107,12 @@ const Label = styled.span`
 const Description = styled.span`
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
   color: ${({ theme }) => theme.colors.neutral.gray};
+`;
+
+const Example = styled.span`
+  font-size: ${({ theme }) => theme.typography.fontSize.xs};
+  color: ${({ theme }) => theme.colors.neutral.gray};
+  font-style: italic;
 `;
 
 const RadioIndicator = styled.div<{ $selected: boolean;  }>`
@@ -195,6 +203,7 @@ export const ToneSelector: React.FC<ToneSelectorProps> = ({
           <TextContent>
             <Label>{tone.label}</Label>
             <Description>{tone.description}</Description>
+            <Example>{tone.example}</Example>
           </TextContent>
           <RadioIndicator $selected={selected === tone.value} />
         </ToneOption>

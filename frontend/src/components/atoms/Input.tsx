@@ -1,6 +1,5 @@
 import React, { forwardRef } from 'react';
 import styled from 'styled-components';
-import { Theme } from '../../styles/theme';
 
 export interface InputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'size'> {
   error?: boolean;

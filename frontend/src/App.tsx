@@ -1,130 +1,251 @@
-import React, { useState } from 'react';
-import { ThemeProvider } from 'styled-components';
+import { useEffect } from 'react';
+import {
+  BrowserRouter,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+  type RouteProps,
+} from 'react-router-dom';
 import { GlobalStyles } from './styles/GlobalStyles';
-import { theme } from './styles/theme';
-import { LoginPage } from './pages/LoginPage';
-import { ChatPage } from './pages/ChatPage';
-import { SettingsPage } from './pages/SettingsPage';
-import { Message, MessageTone, Language } from './types';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { ChatProvider, useChatSession } from './contexts/ChatContext';
+import { CallOverlay } from './components/organisms';
+import {
+  ChatPage,
+  ConversationsPage,
+  ForgotPasswordPage,
+  LoginPage,
+  NotFoundPage,
+  SettingsPage,
+  SignupPage,
+} from './pages';
+import { api } from './lib/api';
+import type { Language, MessageTone } from './types';
 
-type AppScreen = 'login' | 'chat' | 'settings';
+/** N'autorise l'accès qu'une fois la session résolue ET valide. */
+function RequireAuth({ children }: { children: RouteProps['element'] }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return null;
+  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />;
+}
 
-function App() {
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>('login');
-  const [language, setLanguage] = useState<Language>('fr');
-  const [tone, setTone] = useState<MessageTone>('standard');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      senderId: 'contact-1',
-      receiverId: 'user-1',
-      content: 'Bonjour ! Je voulais juste vérifier comment se passe le développement de l\'application.',
-      originalLanguage: 'en',
-      translatedContent: 'Hi! I just wanted to check in and see how the development of the app is going.',
-      targetLanguage: 'fr',
-      tone: 'standard',
-      timestamp: new Date(Date.now() - 3600000),
-      status: 'read',
-      translationStatus: 'translated',
-    },
-    {
-      id: '2',
-      senderId: 'user-1',
-      receiverId: 'contact-1',
-      content: "C'est super! La traduction en temps réel fonctionne-t-elle sans problème ?",
-      originalLanguage: 'fr',
-      translatedContent: "That sounds amazing! Is the real-time translation working smoothly?",
-      targetLanguage: 'en',
-      tone: 'standard',
-      timestamp: new Date(Date.now() - 3000000),
-      status: 'read',
-      translationStatus: 'translated',
-    },
-  ]);
+/** Inversement : un utilisateur connecté n'a rien à faire sur /login. */
+function RedirectIfAuthenticated({ children }: { children: RouteProps['element'] }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  if (isLoading) return null;
+  return isAuthenticated ? <Navigate to="/conversations" replace /> : <>{children}</>;
+}
 
-  const handleLogin = (email: string, password: string) => {
-    console.log('Login attempt:', { email, password });
-    setCurrentScreen('chat');
-  };
-
-  const handleSocialLogin = (provider: 'google' | 'apple' | 'twitter') => {
-    console.log('Social login:', provider);
-    setCurrentScreen('chat');
-  };
-  const handleSettingsClick = () => {
-    setCurrentScreen('settings');
-  }
-  const handleSendMessage = (content: string, messageTone: MessageTone) => {
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      senderId: 'user-1',
-      receiverId: 'contact-1',
-      content,
-      originalLanguage: language,
-      tone: messageTone,
-      timestamp: new Date(),
-      status: 'sending',
-    };
-
-    setMessages([...messages, newMessage]);
-
-    // Simulate translation
-    setTimeout(() => {
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === newMessage.id
-            ? {
-                ...msg,
-                status: 'sent',
-                translationStatus: 'translated',
-                translatedContent: `Translated: ${content}`,
-              }
-            : msg
-        )
-      );
-    }, 1000);
-  };
+function LoginRoute() {
+  const { login, error, isLoading, clearError } = useAuth();
+  const navigate = useNavigate();
 
   return (
-    <ThemeProvider theme={theme}>
-      <GlobalStyles />
-      
-      {currentScreen === 'login' && (
-        <LoginPage
-          onLogin={handleLogin}
-          onSocialLogin={handleSocialLogin}
-          onForgotPassword={() => console.log('Forgot password')}
-          onSignup={() => console.log('Sign up')}
-        />
-      )}
-
-      {currentScreen === 'chat' && (
-        <ChatPage
-          currentUserId="user-1"
-          contactName="Elena"
-          contactAvatar=""
-          isOnline={true}
-          messages={messages}
-          onSendMessage={handleSendMessage}
-          onBackClick={() => setCurrentScreen('login')}
-          onSettingsClick={handleSettingsClick}
-          isConnected={true}
-          showSettingsButton={true}
-
-        />
-      )}
-
-      {currentScreen === 'settings' && (
-        <SettingsPage
-          language={language}
-          tone={tone}
-          onLanguageChange={setLanguage}
-          onToneChange={setTone}
-          onBackClick={() => setCurrentScreen('chat')}
-        />
-      )}
-    </ThemeProvider>
+    <LoginPage
+      isLoading={isLoading}
+      error={error ?? undefined}
+      onLogin={async (email, password) => {
+        try {
+          await login(email, password);
+          navigate('/conversations');
+        } catch {
+          /* message déjà porté par le contexte */
+        }
+      }}
+      onSocialLogin={() => clearError()}
+      onForgotPassword={() => navigate('/forgot-password')}
+      onSignup={() => navigate('/signup')}
+    />
   );
 }
 
-export default App;
+function SignupRoute() {
+  const { signup, error, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  return (
+    <SignupPage
+      isLoading={isLoading}
+      error={error ?? undefined}
+      onSignup={async (name, email, password, language) => {
+        try {
+          await signup({ email, full_name: name, password, preferred_language: language });
+          navigate('/conversations');
+        } catch {
+          /* message déjà porté par le contexte */
+        }
+      }}
+      onSocialSignup={() => undefined}
+      onLoginClick={() => navigate('/login')}
+      onTermsClick={() => undefined}
+      onPrivacyClick={() => undefined}
+    />
+  );
+}
+
+function ForgotPasswordRoute() {
+  const navigate = useNavigate();
+
+  // Le backend n'expose pas encore de route de réinitialisation : on l'assume
+  // explicitement plutôt que de simuler un succès trompeur.
+  return (
+    <ForgotPasswordPage
+      onResetRequest={() => undefined}
+      onBackToLogin={() => navigate('/login')}
+      error="La réinitialisation par e-mail n'est pas encore disponible."
+    />
+  );
+}
+
+function ConversationsRoute() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const chat = useChatSession();
+
+  return (
+    <ConversationsPage
+      currentUserId={user?.id ?? ''}
+      conversations={chat.conversations}
+      error={chat.error ?? undefined}
+      onOpenConversation={(id) => navigate(`/chat/${id}`)}
+      onSearchUsers={(query) => api.searchUsers(query)}
+      onStartConversation={async (userId) => {
+        const id = await chat.startConversation(userId);
+        if (id) navigate(`/chat/${id}`);
+      }}
+      onSettingsClick={() => navigate('/settings')}
+    />
+  );
+}
+
+function ChatRoute() {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { conversationId } = useParams<{ conversationId: string }>();
+  const chat = useChatSession();
+  const call = chat.call;
+
+  // La conversation ouverte vient de l'URL : le lien est partageable et le
+  // rechargement de la page ne perd plus le fil en cours.
+  useEffect(() => {
+    if (conversationId) chat.selectConversation(conversationId);
+  }, [conversationId, chat.selectConversation]);
+
+  const peerName = chat.contact?.full_name ?? 'Conversation';
+
+  return (
+    <>
+      <ChatPage
+        currentUserId={user?.id ?? ''}
+        contactName={peerName}
+        contactAvatar={chat.contact?.avatar_url ?? ''}
+        messages={chat.messages}
+        onSendMessage={(content: string, tone: MessageTone) => void chat.sendMessage(content, tone)}
+        onBackClick={() => navigate('/conversations')}
+        onSettingsClick={() => navigate('/settings')}
+        showSettingsButton
+        isConnected={chat.isConnected}
+        isTyping={chat.isTyping}
+        onTypingChange={chat.notifyTyping}
+        onMessageRead={chat.markRead}
+        onVideoCall={chat.contact ? () => void call.startCall(chat.contact!.id) : undefined}
+      />
+
+      <CallOverlay
+        callState={call.callState}
+        peerName={peerName}
+        peerAvatar={chat.contact?.avatar_url ?? undefined}
+        localStream={call.localStream}
+        remoteStream={call.remoteStream}
+        isMuted={call.isMuted}
+        isCameraOff={call.isCameraOff}
+        error={call.error}
+        onAccept={() => void call.acceptCall()}
+        onReject={call.rejectCall}
+        onHangUp={call.hangUp}
+        onToggleMute={call.toggleMute}
+        onToggleCamera={call.toggleCamera}
+      />
+    </>
+  );
+}
+
+function SettingsRoute() {
+  const { user, updatePreferences, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const leave = async () => {
+    await logout();
+    navigate('/login');
+  };
+
+  return (
+    <SettingsPage
+      language={(user?.preferred_language ?? 'fr') as Language}
+      tone={(user?.preferred_tone ?? 'standard') as MessageTone}
+      fullName={user?.full_name}
+      email={user?.email}
+      onLanguageChange={(language) => void updatePreferences({ preferred_language: language })}
+      onToneChange={(tone) => void updatePreferences({ preferred_tone: tone })}
+      onFullNameChange={(fullName) => updatePreferences({ full_name: fullName })}
+      // La flèche retour revient en arrière ; elle ne déconnecte plus.
+      onBackClick={() => navigate('/conversations')}
+      onLogout={() => void leave()}
+      onDeleteAccount={async () => {
+        await api.deleteAccount();
+        await leave();
+      }}
+    />
+  );
+}
+
+function NotFoundRoute() {
+  const navigate = useNavigate();
+  return <NotFoundPage onHome={() => navigate('/conversations')} />;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Navigate to="/conversations" replace />} />
+      <Route
+        path="/login"
+        element={<RedirectIfAuthenticated><LoginRoute /></RedirectIfAuthenticated>}
+      />
+      <Route
+        path="/signup"
+        element={<RedirectIfAuthenticated><SignupRoute /></RedirectIfAuthenticated>}
+      />
+      <Route path="/forgot-password" element={<ForgotPasswordRoute />} />
+      <Route
+        path="/conversations"
+        element={<RequireAuth><ConversationsRoute /></RequireAuth>}
+      />
+      <Route path="/chat" element={<Navigate to="/conversations" replace />} />
+      <Route
+        path="/chat/:conversationId"
+        element={<RequireAuth><ChatRoute /></RequireAuth>}
+      />
+      <Route path="/settings" element={<RequireAuth><SettingsRoute /></RequireAuth>} />
+      <Route path="*" element={<NotFoundRoute />} />
+    </Routes>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <GlobalStyles />
+      <BrowserRouter>
+        <AuthProvider>
+          <ChatProvider>
+            <AppRoutes />
+          </ChatProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
+  );
+}
