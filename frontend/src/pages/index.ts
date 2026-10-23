@@ -18,3 +18,5 @@ export { ConversationsPage } from './ConversationsPage';
 export type { ConversationsPageProps } from './ConversationsPage';
 
 export { NotFoundPage } from './NotFoundPage';
+
+export { LandingPage } from './LandingPage';

@@ -204,6 +204,94 @@ export const fr = {
   'notFound.message':
     'Cette page n’existe pas. Elle a peut-être été déplacée, ou l’adresse comporte une faute de frappe.',
   'notFound.home': 'Retour aux conversations',
+
+  // Landing
+  // Navigation
+  'landing.nav.features': 'Fonctionnalités',
+  'landing.nav.howItWorks': 'Comment ça marche',
+  'landing.nav.stats': 'Statistiques',
+  'landing.nav.login': 'Connexion',
+  'landing.nav.signup': 'Inscription',
+
+  // Hero
+  'landing.hero.badge': 'Nouveau : Traduction temps réel',
+  'landing.hero.title': 'Traduisez vos émotions sans frontières',
+  'landing.hero.subtitle': 'MultiChat brise la barrière de la langue. Discutez dans votre langue, vos messages sont traduits instantanément dans celle de votre correspondant. Naturel, fluide, humain.',
+  'landing.hero.ctaPrimary': 'Commencer gratuitement',
+  'landing.hero.ctaSecondary': 'Se connecter',
+
+  // Features
+  'landing.features.label': 'Fonctionnalités',
+  'landing.features.title': 'Tout ce qu\'il vous faut pour communiquer sans limites',
+  'landing.features.description': 'Des fonctionnalités pensées pour rendre la conversation multilingue aussi naturelle que possible.',
+
+  'landing.features.translation.title': 'Traduction instantanée',
+  'landing.features.translation.description': 'Vos messages sont traduits dès leur envoi. Plus de copier-coller, plus d\'attente.',
+
+  'landing.features.tone.title': 'Ton adaptatif',
+  'landing.features.tone.description': 'Choisissez votre registre : décontracté entre amis, standard au quotidien, formel pour le travail. La traduction suit votre style.',
+
+  'landing.features.languages.title': '9 langues',
+  'landing.features.languages.description': 'Français, anglais, espagnol, allemand, italien, portugais, chinois, japonais et arabe.',
+
+  'landing.features.calls.title': 'Appels vidéo',
+  'landing.features.calls.description': 'Passez de la conversation écrite à l\'appel vidéo en un clic, sans quitter la discussion.',
+
+  'landing.features.privacy.title': 'Vos données vous appartiennent',
+  'landing.features.privacy.description': 'Vos messages ne servent qu\'à la conversation et à sa traduction. Rien n\'est revendu ni exploité à des fins publicitaires.',
+
+  'landing.features.realtime.title': 'Temps réel',
+  'landing.features.realtime.description': 'Architecture WebSocket pour une latence minimale. Vos messages arrivent instantanément, partout dans le monde.',
+
+  // How It Works
+  'landing.howItWorks.label': 'Simple comme bonjour',
+  'landing.howItWorks.title': 'Commencez en 3 étapes',
+  'landing.howItWorks.description': 'Aucune configuration complexe. Créez votre compte, choisissez votre langue, et discutez.',
+
+  'landing.steps.step1.title': 'Créez votre compte',
+  'landing.steps.step1.description': 'Inscrivez-vous en quelques secondes. Choisissez votre langue préférée et votre ton par défaut.',
+
+  'landing.steps.step2.title': 'Trouvez un contact',
+  'landing.steps.step2.description': 'Recherchez des utilisateurs par nom ou email. La langue de chacun s\'affiche automatiquement.',
+
+  'landing.steps.step3.title': 'Discutez sans frontières',
+  'landing.steps.step3.description': 'Écrivez dans votre langue. Votre message est traduit instantanément. La conversation coule naturellement.',
+
+  // Stats
+  'landing.stats.label': 'En chiffres',
+  'landing.stats.title': 'MultiChat en chiffres',
+  'landing.stats.description': 'Ce que l\'application fait réellement aujourd\'hui.',
+
+  'landing.stats.languages': 'Langues de messages',
+  'landing.stats.tones': 'Registres de ton',
+  'landing.stats.uiLanguages': 'Langues d\'interface',
+  'landing.stats.price': 'Prix',
+  'landing.stats.priceValue': '0 €',
+
+  // CTA
+  'landing.cta.title': 'Prêt à briser la barrière de la langue ?',
+  'landing.cta.description': 'Créez votre compte et discutez dans votre langue dès la première minute. Gratuit, sans engagement.',
+  'landing.cta.primary': 'Créer mon compte',
+  'landing.cta.secondary': 'Me connecter',
+
+  // Footer
+  'landing.footer.description': 'La messagerie qui traduit vos émotions en temps réel. Communiquez avec n\'importe qui, n\'importe où, dans votre langue.',
+  'landing.footer.product': 'Produit',
+  'landing.footer.login': 'Connexion',
+  'landing.footer.signup': 'Inscription',
+  'landing.footer.features': 'Fonctionnalités',
+  'landing.footer.howItWorks': 'Comment ça marche',
+  'landing.footer.company': 'Entreprise',
+  'landing.footer.about': 'À propos',
+  'landing.footer.blog': 'Blog',
+  'landing.footer.careers': 'Carrières',
+  'landing.footer.contact': 'Contact',
+  'landing.footer.legal': 'Légal',
+  'landing.footer.privacy': 'Confidentialité',
+  'landing.footer.terms': 'Conditions',
+  'landing.footer.cookies': 'Cookies',
+  'landing.footer.security': 'Sécurité',
+  'landing.footer.copyright': '© 2026 MultiChat. Tous droits réservés.',
 } as const;
 
 /** Toute langue doit couvrir exactement les clés du français. */
@@ -403,6 +491,94 @@ export const en: Dictionary = {
   'notFound.message':
     'This page does not exist. It may have moved, or the address contains a typo.',
   'notFound.home': 'Back to conversations',
+
+  // Landing
+  // Navigation
+  'landing.nav.features': 'Features',
+  'landing.nav.howItWorks': 'How it works',
+  'landing.nav.stats': 'Stats',
+  'landing.nav.login': 'Login',
+  'landing.nav.signup': 'Sign up',
+
+  // Hero
+  'landing.hero.badge': 'New: Real-time translation',
+  'landing.hero.title': 'Translate your emotions across borders',
+  'landing.hero.subtitle': 'MultiChat breaks the language barrier. Chat in your language, your messages are instantly translated into your recipient\'s. Natural, fluid, human.',
+  'landing.hero.ctaPrimary': 'Get started free',
+  'landing.hero.ctaSecondary': 'Sign in',
+
+  // Features
+  'landing.features.label': 'Features',
+  'landing.features.title': 'Everything you need to communicate without limits',
+  'landing.features.description': 'Features designed to make multilingual conversation as natural as possible.',
+
+  'landing.features.translation.title': 'Instant translation',
+  'landing.features.translation.description': 'Your messages are translated the moment you send them. No copy-paste, no waiting.',
+
+  'landing.features.tone.title': 'Adaptive tone',
+  'landing.features.tone.description': 'Choose your register: casual with friends, standard daily, formal for work. Translation follows your style.',
+
+  'landing.features.languages.title': '9 languages',
+  'landing.features.languages.description': 'French, English, Spanish, German, Italian, Portuguese, Chinese, Japanese and Arabic.',
+
+  'landing.features.calls.title': 'Video calls',
+  'landing.features.calls.description': 'Move from chat to a video call in one click, without leaving the conversation.',
+
+  'landing.features.privacy.title': 'Your data stays yours',
+  'landing.features.privacy.description': 'Your messages serve the conversation and its translation, nothing else. Never resold, never used for advertising.',
+
+  'landing.features.realtime.title': 'Real-time',
+  'landing.features.realtime.description': 'WebSocket architecture for minimal latency. Your messages arrive instantly, anywhere in the world.',
+
+  // How It Works
+  'landing.howItWorks.label': 'Simple as that',
+  'landing.howItWorks.title': 'Get started in 3 steps',
+  'landing.howItWorks.description': 'No complex setup. Create your account, choose your language, and chat.',
+
+  'landing.steps.step1.title': 'Create your account',
+  'landing.steps.step1.description': 'Sign up in seconds. Choose your preferred language and default tone.',
+
+  'landing.steps.step2.title': 'Find a contact',
+  'landing.steps.step2.description': 'Search users by name or email. Each person\'s language is displayed automatically.',
+
+  'landing.steps.step3.title': 'Chat without borders',
+  'landing.steps.step3.description': 'Write in your language. Your message is translated instantly. Conversation flows naturally.',
+
+  // Stats
+  'landing.stats.label': 'By the numbers',
+  'landing.stats.title': 'MultiChat by the numbers',
+  'landing.stats.description': 'What the app actually does today.',
+
+  'landing.stats.languages': 'Message languages',
+  'landing.stats.tones': 'Tone registers',
+  'landing.stats.uiLanguages': 'Interface languages',
+  'landing.stats.price': 'Price',
+  'landing.stats.priceValue': 'Free',
+
+  // CTA
+  'landing.cta.title': 'Ready to break the language barrier?',
+  'landing.cta.description': 'Create your account and chat in your own language from the first minute. Free, no commitment.',
+  'landing.cta.primary': 'Create my account',
+  'landing.cta.secondary': 'Sign in',
+
+  // Footer
+  'landing.footer.description': 'The messaging app that translates your emotions in real-time. Communicate with anyone, anywhere, in your language.',
+  'landing.footer.product': 'Product',
+  'landing.footer.login': 'Login',
+  'landing.footer.signup': 'Sign up',
+  'landing.footer.features': 'Features',
+  'landing.footer.howItWorks': 'How it works',
+  'landing.footer.company': 'Company',
+  'landing.footer.about': 'About',
+  'landing.footer.blog': 'Blog',
+  'landing.footer.careers': 'Careers',
+  'landing.footer.contact': 'Contact',
+  'landing.footer.legal': 'Legal',
+  'landing.footer.privacy': 'Privacy',
+  'landing.footer.terms': 'Terms',
+  'landing.footer.cookies': 'Cookies',
+  'landing.footer.security': 'Security',
+  'landing.footer.copyright': '© 2026 MultiChat. All rights reserved.',
 };
 
 /** Langues dont l'INTERFACE est traduite. Les autres retombent sur l'anglais. */

@@ -19,6 +19,7 @@ import {
   ChatPage,
   ConversationsPage,
   ForgotPasswordPage,
+  LandingPage,
   LoginPage,
   NotFoundPage,
   SettingsPage,
@@ -40,6 +41,21 @@ function RedirectIfAuthenticated({ children }: { children: RouteProps['element']
   if (isLoading) return null;
   if (isAuthenticated) return <Navigate to="/conversations" replace />;
   return <LightOnly>{children}</LightOnly>;
+}
+
+/** Page d'accueil (landing) : accessible à tous, redirige vers conversations si connecté */
+function LandingRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      navigate('/conversations', { replace: true });
+    }
+  }, [isAuthenticated, isLoading, navigate]);
+
+  if (isLoading) return null;
+  return <LandingPage />;
 }
 
 function LoginRoute() {
@@ -232,7 +248,7 @@ function NotFoundRoute() {
 function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/conversations" replace />} />
+      <Route path="/" element={<LandingRoute />} />
       <Route
         path="/login"
         element={<RedirectIfAuthenticated><LoginRoute /></RedirectIfAuthenticated>}
