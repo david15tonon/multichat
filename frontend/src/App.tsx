@@ -55,7 +55,11 @@ function LandingRoute() {
   }, [isAuthenticated, isLoading, navigate]);
 
   if (isLoading) return null;
-  return <LandingPage />;
+  return (
+    <LightOnly>
+      <LandingPage />
+    </LightOnly>
+  );
 }
 
 function LoginRoute() {
