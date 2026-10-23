@@ -51,6 +51,13 @@ tasks/
 # tasks/ -> lien symbolique vers le coffre central (jamais commité)
 tasks
 
+# Skills installés par `npx skills add` (paquet skills.sh).
+# `.claude/skills/*` sont des liens symboliques vers `.agents/skills/*` :
+# inutilisables chez un autre clone, et c'est du contenu tiers.
+# `skills-lock.json` reste versionné : il suffit à les réinstaller.
+.agents/
+.claude/skills/
+
 # Python
 __pycache__/
 *.py[cod]
