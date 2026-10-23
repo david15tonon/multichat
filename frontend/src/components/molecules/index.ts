@@ -6,3 +6,5 @@ export type { MessageBubbleProps } from './MessageBubble';
 
 export { LanguagePicker } from './LanguagePicker';
 export type { LanguagePickerProps } from './LanguagePicker';
+
+export { LocaleSwitcher } from './LocaleSwitcher';

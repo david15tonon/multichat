@@ -212,6 +212,9 @@ export const fr = {
   'landing.nav.stats': 'Statistiques',
   'landing.nav.login': 'Connexion',
   'landing.nav.signup': 'Inscription',
+  'landing.nav.language': 'Langue',
+  'landing.nav.switchToEn': 'Afficher le site en anglais',
+  'landing.nav.switchToFr': 'Afficher le site en français',
 
   // Hero
   'landing.hero.badge': 'Nouveau : Traduction temps réel',
@@ -499,6 +502,9 @@ export const en: Dictionary = {
   'landing.nav.stats': 'Stats',
   'landing.nav.login': 'Login',
   'landing.nav.signup': 'Sign up',
+  'landing.nav.language': 'Language',
+  'landing.nav.switchToEn': 'Display the site in English',
+  'landing.nav.switchToFr': 'Display the site in French',
 
   // Hero
   'landing.hero.badge': 'New: Real-time translation',

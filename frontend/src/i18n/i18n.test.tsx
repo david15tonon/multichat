@@ -1,7 +1,10 @@
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { I18nProvider, useT, useI18n } from './I18nContext';
-import { dictionaries, en, fr } from './translations';
+import { dictionaries, en, fr, type UiLocale } from './translations';
+
+const CLE_STOCKAGE = 'multichat.ui-locale';
 
 function Sonde({ keyName }: { keyName: Parameters<ReturnType<typeof useT>>[0] }) {
   const t = useT();
@@ -10,6 +13,19 @@ function Sonde({ keyName }: { keyName: Parameters<ReturnType<typeof useT>>[0] })
     <>
       <span data-testid="locale">{locale}</span>
       <span data-testid="texte">{t(keyName)}</span>
+    </>
+  );
+}
+
+/** Sonde capable de changer de langue, comme le fait la bascule FR/EN. */
+function SondeAvecBascule({ vers }: { vers: UiLocale }) {
+  const { locale, setLocale } = useI18n();
+  return (
+    <>
+      <span data-testid="locale">{locale}</span>
+      <button type="button" onClick={() => setLocale(vers)}>
+        basculer
+      </button>
     </>
   );
 }
@@ -80,5 +96,69 @@ describe('I18nProvider', () => {
     const silence = vi.spyOn(console, 'error').mockImplementation(() => undefined);
     expect(() => render(<Sonde keyName="chat.today" />)).toThrow(/I18nProvider/);
     silence.mockRestore();
+  });
+});
+
+describe('langue du visiteur', () => {
+  beforeEach(() => window.localStorage.clear());
+
+  it('part de l’anglais quand rien n’a été choisi', () => {
+    // Règle de la landing : anglais par défaut, quelle que soit la langue du
+    // navigateur — il n'y a plus de détection.
+    render(<I18nProvider><Sonde keyName="chat.today" /></I18nProvider>);
+
+    expect(screen.getByTestId('locale')).toHaveTextContent('en');
+  });
+
+  it('reprend le choix mémorisé d’une visite précédente', () => {
+    window.localStorage.setItem(CLE_STOCKAGE, 'fr');
+
+    render(<I18nProvider><Sonde keyName="chat.today" /></I18nProvider>);
+
+    expect(screen.getByTestId('locale')).toHaveTextContent('fr');
+  });
+
+  it('ignore une valeur stockée qui n’est pas une langue d’interface', () => {
+    window.localStorage.setItem(CLE_STOCKAGE, 'ja');
+
+    render(<I18nProvider><Sonde keyName="chat.today" /></I18nProvider>);
+
+    expect(screen.getByTestId('locale')).toHaveTextContent('en');
+  });
+
+  it('applique et mémorise le choix du visiteur', async () => {
+    render(<I18nProvider><SondeAvecBascule vers="fr" /></I18nProvider>);
+
+    await userEvent.click(screen.getByRole('button', { name: 'basculer' }));
+
+    expect(screen.getByTestId('locale')).toHaveTextContent('fr');
+    expect(window.localStorage.getItem(CLE_STOCKAGE)).toBe('fr');
+  });
+
+  it('laisse la langue imposée primer sur le choix mémorisé', () => {
+    // Cas de l'utilisateur connecté : c'est son compte qui fait foi.
+    window.localStorage.setItem(CLE_STOCKAGE, 'fr');
+
+    render(<I18nProvider locale="en"><Sonde keyName="chat.today" /></I18nProvider>);
+
+    expect(screen.getByTestId('locale')).toHaveTextContent('en');
+  });
+
+  it('reste utilisable quand le stockage est refusé', () => {
+    // Navigation privée, iframe tierce : localStorage lève à la lecture.
+    const stockage = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+      throw new Error('accès refusé');
+    });
+
+    render(<I18nProvider><Sonde keyName="chat.today" /></I18nProvider>);
+
+    expect(screen.getByTestId('locale')).toHaveTextContent('en');
+    stockage.mockRestore();
+  });
+
+  it('reflète la langue sur l’attribut lang du document', () => {
+    render(<I18nProvider locale="fr"><Sonde keyName="chat.today" /></I18nProvider>);
+
+    expect(document.documentElement.lang).toBe('fr');
   });
 });

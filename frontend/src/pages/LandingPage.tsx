@@ -4,6 +4,7 @@ import styled, { css } from 'styled-components';
 import { Logo } from '../components/atoms/Logo';
 import { Button } from '../components/atoms/Button';
 import { Icon, type IconName } from '../components/atoms/Icon';
+import { LocaleSwitcher } from '../components/molecules/LocaleSwitcher';
 import { useT } from '../i18n/I18nContext';
 
 // ============================================
@@ -560,6 +561,12 @@ const NavActions = styled.div`
   display: flex;
   align-items: center;
   gap: ${({ theme }) => theme.spacing.md};
+
+  /* Trois éléments au lieu de deux depuis la bascule de langue : sur petit
+     écran, l'espacement large les poussait hors de la ligne. */
+  @media (max-width: 480px) {
+    gap: ${({ theme }) => theme.spacing.sm};
+  }
 `;
 
 // ============================================
@@ -636,6 +643,7 @@ export const LandingPage: React.FC = () => {
             <NavLink href="#stats">{t('landing.nav.stats')}</NavLink>
           </NavLinks>
           <NavActions>
+            <LocaleSwitcher />
             <Button variant="ghost" size="small" onClick={() => navigate('/login')}>
               {t('landing.nav.login')}
             </Button>

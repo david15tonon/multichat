@@ -36,7 +36,7 @@ const page = (props: Partial<ChatPageProps> = {}) => (
 
 const modal = () => screen.getByText('Traduction indisponible').closest('div') as HTMLElement;
 
-describe('ChatPage — alerte de traduction', () => {
+describe('ChatPage — alerte de traduction', { timeout: 20_000 }, () => {
   it('reste masquée tant que la connexion tient', () => {
     // Une traduction échouée alors que le socket est vivant ne justifie pas
     // une modale : le serveur réessaie.

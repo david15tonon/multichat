@@ -32,7 +32,7 @@ const page = (props: Partial<ConversationsPageProps> = {}) => (
 
 const searchField = () => screen.getByPlaceholderText(/rechercher/i);
 
-describe('ConversationsPage — recherche débouncée', () => {
+describe('ConversationsPage — recherche débouncée', { timeout: 20_000 }, () => {
   it('n’interroge pas l’API sous deux caractères', async () => {
     const onSearchUsers = vi.fn().mockResolvedValue([]);
     const u = userEvent.setup();

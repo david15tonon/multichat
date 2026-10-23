@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
@@ -15,15 +16,27 @@ vi.mock('react-router-dom', async () => {
   return { ...actual, useNavigate: () => navigate };
 });
 
-const show = (locale: UiLocale = 'fr') =>
+const monter = (page: ReactNode) =>
   render(
     <MemoryRouter>
-      <ThemeProvider theme={theme}>
-        <I18nProvider locale={locale}>
-          <LandingPage />
-        </I18nProvider>
-      </ThemeProvider>
+      <ThemeProvider theme={theme}>{page}</ThemeProvider>
     </MemoryRouter>,
+  );
+
+/** Langue imposée, comme le fait un compte connecté. */
+const show = (locale: UiLocale = 'fr') =>
+  monter(
+    <I18nProvider locale={locale}>
+      <LandingPage />
+    </I18nProvider>,
+  );
+
+/** Visiteur anonyme : aucune langue imposée, c'est le provider qui tranche. */
+const showVisiteur = () =>
+  monter(
+    <I18nProvider>
+      <LandingPage />
+    </I18nProvider>,
   );
 
 /**
@@ -64,5 +77,28 @@ describe('LandingPage', { timeout: 20_000 }, () => {
     const barre = within(screen.getByRole('navigation'));
     const lien = barre.getByRole('link', { name: dictionaries.fr['landing.nav.features'] });
     expect(lien).toHaveAttribute('href', '#features');
+  });
+
+  it('s’ouvre en anglais pour un visiteur qui n’a rien choisi', () => {
+    window.localStorage.clear();
+    // Sans langue imposée, le provider applique la règle des pages publiques.
+    showVisiteur();
+
+    expect(
+      screen.getByRole('heading', { name: dictionaries.en['landing.hero.title'] }),
+    ).toBeInTheDocument();
+  });
+
+  it('laisse le visiteur passer la page en français', async () => {
+    window.localStorage.clear();
+    showVisiteur();
+
+    await userEvent.click(
+      screen.getByRole('button', { name: dictionaries.en['landing.nav.switchToFr'] }),
+    );
+
+    expect(
+      screen.getByRole('heading', { name: dictionaries.fr['landing.hero.title'] }),
+    ).toBeInTheDocument();
   });
 });
