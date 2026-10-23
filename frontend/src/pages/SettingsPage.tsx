@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useT } from '../i18n/I18nContext';
 import { Language, MessageTone } from '../types';
@@ -206,9 +206,15 @@ export const SettingsPage: React.FC<SettingsPageProps> = ({
   const [nameDraft, setNameDraft] = useState(fullName ?? '');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
 
-  useEffect(() => {
+  // Le profil arrive après le montage : le brouillon doit suivre le nom reçu,
+  // sans l'écraser pendant que l'utilisateur tape. Ajustement pendant le rendu
+  // plutôt qu'un effet, qui provoquait un rendu en cascade (et un champ qui
+  // clignote) à chaque arrivée du profil.
+  const [syncedName, setSyncedName] = useState(fullName);
+  if (fullName !== syncedName) {
+    setSyncedName(fullName);
     setNameDraft(fullName ?? '');
-  }, [fullName]);
+  }
 
   return (
     <Container>

@@ -7,7 +7,14 @@
  * monté une fois, partagé par toutes les routes.
  */
 
-import { createContext, useCallback, useContext, useRef, type ReactNode } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  type ReactNode,
+} from 'react';
 import { useAuth } from './AuthContext';
 import { useChat } from '../hooks/useChat';
 import { useWebRTC } from '../hooks/useWebRTC';
@@ -34,7 +41,13 @@ export function ChatProvider({ children }: { children: ReactNode }) {
 
   const chat = useChat(user?.id ?? null, language, handleCallSignal);
   const call = useWebRTC(chat.socket);
-  callSignal.current = call.handleSignal;
+
+  // Le branchement se fait APRÈS le rendu : écrire une ref pendant le rendu
+  // rend celui-ci impur. Aucun risque de manquer un signal, les événements
+  // d'appel n'arrivent que du socket, donc après la validation du rendu.
+  useEffect(() => {
+    callSignal.current = call.handleSignal;
+  }, [call.handleSignal]);
 
   return <ChatContext.Provider value={{ ...chat, call }}>{children}</ChatContext.Provider>;
 }

@@ -149,12 +149,15 @@ function ChatRoute() {
   const { conversationId } = useParams<{ conversationId: string }>();
   const chat = useChatSession();
   const call = chat.call;
+  // Déstructuré : une dépendance d'effet doit être la fonction elle-même, pas
+  // un accès de membre sur un objet de contexte recréé à chaque rendu.
+  const { selectConversation } = chat;
 
   // La conversation ouverte vient de l'URL : le lien est partageable et le
   // rechargement de la page ne perd plus le fil en cours.
   useEffect(() => {
-    if (conversationId) chat.selectConversation(conversationId);
-  }, [conversationId, chat.selectConversation]);
+    if (conversationId) selectConversation(conversationId);
+  }, [conversationId, selectConversation]);
 
   const peerName = chat.contact?.full_name ?? t('chat.conversation');
 

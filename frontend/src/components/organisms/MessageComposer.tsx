@@ -213,7 +213,7 @@ export const MessageComposer: React.FC<MessageComposerProps> = ({
             {selectedTone.toUpperCase()}
             <span>{t('chat.previewLabel')}</span>
           </PreviewLabel>
-          <PreviewText>"{message}"</PreviewText>
+          <PreviewText>&quot;{message}&quot;</PreviewText>
         </PreviewArea>
       )}
 

@@ -51,7 +51,8 @@ export function useChat(
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const socketRef = useRef<ChatSocket | null>(null);
-  // En state (et pas seulement en ref) : useWebRTC doit réagir à sa création.
+  // En state (et pas seulement en ref) : useWebRTC doit réagir à son arrivée.
+  // Publié à l'ouverture, pas à la construction — voir `onOpen` plus bas.
   const [socket, setSocket] = useState<ChatSocket | null>(null);
 
   const loadConversations = useCallback(async () => {
@@ -69,15 +70,6 @@ export function useChat(
         return next;
       });
       setActiveConversationId((current) => current ?? list[0]?.id ?? null);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Chargement impossible');
-    }
-  }, []);
-
-  const loadMessages = useCallback(async (conversationId: string) => {
-    try {
-      const conversation = await api.conversation(conversationId);
-      setMessages(conversation.messages.map(toMessage));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Chargement impossible');
     }
@@ -115,6 +107,9 @@ export function useChat(
       onEvent: handleEvent,
       onOpen: () => {
         setIsConnected(true);
+        // Publié seulement une fois ouvert : avant, `signal()` n'aurait de
+        // toute façon rien pu émettre.
+        setSocket(chatSocket);
         // Indispensable : réabonne le socket aux salons côté serveur.
         void loadConversations();
       },
@@ -122,7 +117,6 @@ export function useChat(
     });
 
     socketRef.current = chatSocket;
-    setSocket(chatSocket);
     chatSocket.connect();
 
     return () => {
@@ -133,8 +127,26 @@ export function useChat(
   }, [currentUserId, loadConversations, onCallSignal]);
 
   useEffect(() => {
-    if (activeConversationId) void loadMessages(activeConversationId);
-  }, [activeConversationId, loadMessages]);
+    if (!activeConversationId) return;
+
+    // Garde d'annulation : en changeant vite de conversation, la réponse de la
+    // précédente pouvait arriver en dernier et écraser la bonne.
+    let cancelled = false;
+    void (async () => {
+      try {
+        const conversation = await api.conversation(activeConversationId);
+        if (!cancelled) setMessages(conversation.messages.map(toMessage));
+      } catch (cause) {
+        if (!cancelled) {
+          setError(cause instanceof Error ? cause.message : 'Chargement impossible');
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeConversationId]);
 
   const sendMessage = useCallback(
     async (content: string, tone: MessageTone) => {

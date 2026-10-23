@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useT } from '../i18n/I18nContext';
 import { Avatar, Badge, Button, Icon, Input } from '../components/atoms';
@@ -139,45 +139,41 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
 }) => {
   const t = useT();
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<UserPublic[]>([]);
-  const [searching, setSearching] = useState(false);
+  // Les résultats portent le terme auquel ils répondent : ceux d'une frappe
+  // précédente ne peuvent plus s'afficher sous une recherche en cours, et
+  // « recherche… » se déduit de l'écart entre les deux.
+  const [search, setSearch] = useState<{ term: string; users: UserPublic[] }>({
+    term: '',
+    users: [],
+  });
   const [searchError, setSearchError] = useState<string | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const term = query.trim();
+  const isSearchable = term.length >= 2;
+  const results = search.term === term ? search.users : [];
+  const searching = isSearchable && search.term !== term;
 
   // Débounce : on ne lance pas une requête à chaque frappe.
   useEffect(() => {
-    const term = query.trim();
-    if (timer.current) clearTimeout(timer.current);
+    if (!isSearchable) return;
 
-    if (term.length < 2) {
-      setResults([]);
-      setSearching(false);
-      return;
-    }
-
-    setSearching(true);
-    timer.current = setTimeout(async () => {
+    const handle = setTimeout(async () => {
       try {
-        setResults(await onSearchUsers(term));
+        setSearch({ term, users: await onSearchUsers(term) });
         setSearchError(null);
       } catch (cause) {
         setSearchError(cause instanceof Error ? cause.message : t('conversations.searchFailed'));
-        setResults([]);
-      } finally {
-        setSearching(false);
+        setSearch({ term, users: [] });
       }
     }, SEARCH_DEBOUNCE_MS);
 
-    return () => {
-      if (timer.current) clearTimeout(timer.current);
-    };
-  }, [query, onSearchUsers]);
+    return () => clearTimeout(handle);
+  }, [term, isSearchable, onSearchUsers, t]);
 
   const start = useCallback(
     async (userId: string) => {
       await onStartConversation(userId);
       setQuery('');
-      setResults([]);
     },
     [onStartConversation],
   );
@@ -195,7 +191,7 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
           preview: conversation.last_message?.content ?? t('conversations.noMessageYet'),
         };
       }),
-    [conversations, currentUserId, onlineUsers],
+    [conversations, currentUserId, onlineUsers, t],
   );
 
   return (
@@ -221,7 +217,7 @@ export const ConversationsPage: React.FC<ConversationsPageProps> = ({
 
           {searchError && <ErrorBanner>{searchError}</ErrorBanner>}
 
-          {query.trim().length >= 2 && (
+          {isSearchable && (
             <>
               <SectionTitle>
                 {searching ? t('conversations.searching') : t('conversations.results', { count: results.length })}

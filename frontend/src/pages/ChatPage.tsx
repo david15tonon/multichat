@@ -204,7 +204,6 @@ export const ChatPage: React.FC<ChatPageProps> = ({
   onSettingsClick,
 }) => {
   const t = useT();
-  const [showError, setShowError] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -215,13 +214,12 @@ export const ChatPage: React.FC<ChatPageProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // Check for translation errors
-  useEffect(() => {
-    const hasError = messages.some((msg) => msg.translationStatus === 'failed');
-    if (hasError && isConnected === false) {
-      setShowError(true);
-    }
-  }, [messages, isConnected]);
+  // Alerte de traduction : état DÉRIVÉ, plus un drapeau recopié par un effet.
+  // On mémorise le nombre d'échecs déjà écartés : fermer la modale la garde
+  // fermée, mais un nouvel échec la rouvre.
+  const failedCount = messages.filter((msg) => msg.translationStatus === 'failed').length;
+  const [dismissedCount, setDismissedCount] = useState(0);
+  const showError = isConnected === false && failedCount > dismissedCount;
 
   const groupMessagesByDate = (messages: Message[]) => {
     const groups: { [key: string]: Message[] } = {};
@@ -332,7 +330,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({
         </ModalIcon>
         <ModalTitle>{t('chat.translationFailedTitle')}</ModalTitle>
         <ModalText>{t('chat.translationFailedText')}</ModalText>
-        <Button variant="secondary" onClick={() => setShowError(false)}>
+        <Button variant="secondary" onClick={() => setDismissedCount(failedCount)}>
           <Icon name="refresh" size={20} />
           {t('common.retry')}
         </Button>
